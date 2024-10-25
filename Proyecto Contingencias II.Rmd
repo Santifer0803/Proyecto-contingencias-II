@@ -1,0 +1,100 @@
+---
+title: "proyecto_contingencias_ii"
+output: html_document
+---
+
+```{r}
+library(readxl)
+# Importar tabla masculina de intensidades graduales a estados de restricción de actividad central
+hombres_restr <- read_excel("info/Tablas Proyecto Final.xlsx", 
+    sheet = "h_estados_restr")
+# Importar tabla femenina de intensidades graduales a estados de restricción de actividad central
+mujeres_restr <- read_excel("info/Tablas Proyecto Final.xlsx",
+    sheet = "m_estados_restr")
+# Importar tabla masculina transiciones graduales de recuperación
+hombres_recup <- read_excel("info/Tablas Proyecto Final.xlsx", 
+    sheet = "h_recuperación")
+# Importar tabla femenina transiciones graduales de recuperación
+mujeres_recup <- read_excel("info/Tablas Proyecto Final.xlsx",
+    sheet = "m_recuperación")
+# Importar tabla masculina intensidades de transición graduales de mortalidad
+hombres_mort <- read_excel("info/Tablas Proyecto Final.xlsx",
+    sheet = "h_mortalidad")
+# Importar tabla femenina intensidades de transición graduales de mortalidad
+mujeres_mort <- read_excel("info/Tablas Proyecto Final.xlsx",
+    sheet = "m_mortalidad")
+```
+
+
+```{r}
+# Función para obtener las intensidades de transición graduales a estados de restricción de actividad central
+# x: edad
+# tabla: hombres_restr o mujeres_restr
+# mu: mu_12, mu_13, mu_14, mu_15, mu_23, mu_24, mu_25, mu_34, mu_35 o mu_45
+restr_act_central <- function(x, tabla, mu){
+  
+  if (x <= 65){
+    
+    valor_mu <- (tabla[[mu]][1] + tabla[[mu]][2] * (tabla[[mu]][3])^x)/(1 + tabla[[mu]][4] * (tabla[[mu]][3])^x + tabla[[mu]][5] * (tabla[[mu]][3])^(-x)) + tabla[[mu]][6]
+    
+  } else {
+    
+    valor_mu <- tabla[[mu]][8] * (x - 65)^5 + tabla[[mu]][9] * (x - 65)^4 + tabla[[mu]][10] * (x - 65)^3 + tabla[[mu]][11] * (x - 65)^2 + tabla[[mu]][12] * (x - 65) + tabla[[mu]][13] 
+    
+  }
+  
+  return(valor_mu)
+  
+}
+
+prueba_1h <- restr_act_central(20, hombres_restr, "mu_12")
+prueba_1h
+prueba_1m <- restr_act_central(21, mujeres_restr, "mu_12")
+prueba_1m
+```
+```{r}
+# Función para calcular las intensidades de transición graduales a recuperación
+# x: edad
+# tabla: hombres_recup o mujeres_recup
+# mu: mu_21, mu_32, mu_43 o mu_54
+recuperacion <- function(x, tabla, mu){
+  
+  valor_mu <- (tabla[[mu]][1] + exp(tabla[[mu]][2] + tabla[[mu]][3] * x))/(1 + tabla[[mu]][1] + exp(tabla[[mu]][2] + tabla[[mu]][3] * x))
+  
+  return(valor_mu)
+}
+
+prueba_2h <- recuperacion(20, hombres_recup, "mu_21")
+prueba_2h
+prueba_2m <- recuperacion(21, mujeres_recup, "mu_21")
+prueba_2m
+```
+```{r}
+# Función para calcular las intensidades de transición graduales a mortalidad
+# x: edad
+# tabla: hombres_recup o mujeres_recup
+# mu: mu_16, mu_26, mu_36, mu_46 o mu_56
+mortalidad <- function(x, tabla,mu){
+  
+  valor_mu <- tabla[[mu]][1] + tabla[[mu]][2] * x + exp(tabla[[mu]][3] + tabla[[mu]][4] * x)
+  
+  return(valor_mu)
+  
+}
+
+prueba_3h <- mortalidad(20, hombres_mort, "mu_16")
+prueba_3h
+prueba_3m <- mortalidad(21, mujeres_mort, "mu_16")
+prueba_3m
+```
+
+```{r}
+# Importar tablas con probabilidades de transición
+hombres_prob_transicion <- read_excel("info/Tablas Proyecto Final.xlsx", 
+    sheet = "h_prob_transicion")
+mujeres_prob_transicion <- read_excel("info/Tablas Proyecto Final.xlsx",  
+    sheet = "m_prob_transicion")
+```
+
+
+
