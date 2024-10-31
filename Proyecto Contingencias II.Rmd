@@ -5,23 +5,23 @@ output: html_document
 
 ```{r}
 library(readxl)
-# Importar tabla masculina de intensidades graduales a estados de restricción de actividad central
-hombres_restr <- read_excel("info/Tablas Proyecto Final.xlsx", 
+# Se importa la tabla masculina de intensidades graduales a estados de restricción de actividad central
+hombres_restr <- read_excel("data/Tablas Proyecto Final.xlsx", 
     sheet = "h_estados_restr")
-# Importar tabla femenina de intensidades graduales a estados de restricción de actividad central
-mujeres_restr <- read_excel("info/Tablas Proyecto Final.xlsx",
+# Se importa la tabla femenina de intensidades graduales a estados de restricción de actividad central
+mujeres_restr <- read_excel("data/Tablas Proyecto Final.xlsx",
     sheet = "m_estados_restr")
-# Importar tabla masculina transiciones graduales de recuperación
-hombres_recup <- read_excel("info/Tablas Proyecto Final.xlsx", 
+# Se importa la tabla masculina transiciones graduales de recuperación
+hombres_recup <- read_excel("data/Tablas Proyecto Final.xlsx", 
     sheet = "h_recuperación")
-# Importar tabla femenina transiciones graduales de recuperación
-mujeres_recup <- read_excel("info/Tablas Proyecto Final.xlsx",
+# Se importa la tabla femenina transiciones graduales de recuperación
+mujeres_recup <- read_excel("data/Tablas Proyecto Final.xlsx",
     sheet = "m_recuperación")
-# Importar tabla masculina intensidades de transición graduales de mortalidad
-hombres_mort <- read_excel("info/Tablas Proyecto Final.xlsx",
+# Se importa la tabla masculina intensidades de transición graduales de mortalidad
+hombres_mort <- read_excel("data/Tablas Proyecto Final.xlsx",
     sheet = "h_mortalidad")
-# Importar tabla femenina intensidades de transición graduales de mortalidad
-mujeres_mort <- read_excel("info/Tablas Proyecto Final.xlsx",
+# Se importa la tabla femenina intensidades de transición graduales de mortalidad
+mujeres_mort <- read_excel("data/Tablas Proyecto Final.xlsx",
     sheet = "m_mortalidad")
 ```
 
