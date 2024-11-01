@@ -199,29 +199,29 @@ Con las probabilidades corregidas, se continúa obteniendo las probabilidades de
 ```{r probabilidades intermedias}
 
 
-# expon1 <- function(t) {
-#   exp(-t * sum(
-#     c(
-#       restr_act_central(21, hombres_restr, "mu_12"),
-#       restr_act_central(21, hombres_restr, "mu_13"),
-#       restr_act_central(21, hombres_restr, "mu_14"),
-#       restr_act_central(21, hombres_restr, "mu_15"),
-#       mortalidad(21, hombres_mort, "mu_16")
-#     )
-#   )) *
-#     exp(-(20 - t) * sum(
-#       c(
-#         restr_act_central(21, hombres_restr, "mu_23"),
-#         restr_act_central(21, hombres_restr, "mu_24"),
-#         restr_act_central(21, hombres_restr, "mu_25"),
-#         recuperacion(21, hombres_restr, "mu_21"),
-#         mortalidad(21, hombres_mort, "mu_26")
-#       )
-#     )) *
-#     restr_act_central(21, hombres_restr, "mu_12")
-# }
-# 
-# integrate(expon1, 0, 1)
+expon1 <- function(t) {
+  exp(-t * sum(
+    c(
+      restr_act_central(21, hombres_restr, "mu_12"),
+      restr_act_central(21, hombres_restr, "mu_13"),
+      restr_act_central(21, hombres_restr, "mu_14"),
+      restr_act_central(21, hombres_restr, "mu_15"),
+      mortalidad(21, hombres_mort, "mu_16")
+    )
+  )) *
+    exp(-(22 - t) * sum(
+      c(
+        restr_act_central(21, hombres_restr, "mu_23"),
+        restr_act_central(21, hombres_restr, "mu_24"),
+        restr_act_central(21, hombres_restr, "mu_25"),
+        recuperacion(21, hombres_restr, "mu_21"),
+        mortalidad(21, hombres_mort, "mu_26")
+      )
+    )) *
+    restr_act_central(21, hombres_restr, "mu_12")
+}
+
+integrate(expon1, 0, 1)
 
 prueba <- list()
 
@@ -236,7 +236,7 @@ for (i in 21:65) {
         mortalidad(i, hombres_mort, "mu_16")
       )
     )) *
-      exp(-(20 - t) * sum(
+      exp(-((i - 1) - t) * sum(
         c(
           restr_act_central(i, hombres_restr, "mu_23"),
           restr_act_central(i, hombres_restr, "mu_24"),
