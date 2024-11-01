@@ -197,9 +197,58 @@ rm(correccion_hombres, correccion_mujeres, suma_mujeres, suma_hombres)
 Con las probabilidades corregidas, se continúa obteniendo las probabilidades de transición intermedias, para edades de 18 a 115, usando el supuesto de fuerza de mortalidad constante.
 
 ```{r probabilidades intermedias}
-# Se definen varios vectores, empezando por unos índices
-indices <- c(1:95)
 
+
+# expon1 <- function(t) {
+#   exp(-t * sum(
+#     c(
+#       restr_act_central(21, hombres_restr, "mu_12"),
+#       restr_act_central(21, hombres_restr, "mu_13"),
+#       restr_act_central(21, hombres_restr, "mu_14"),
+#       restr_act_central(21, hombres_restr, "mu_15"),
+#       mortalidad(21, hombres_mort, "mu_16")
+#     )
+#   )) *
+#     exp(-(20 - t) * sum(
+#       c(
+#         restr_act_central(21, hombres_restr, "mu_23"),
+#         restr_act_central(21, hombres_restr, "mu_24"),
+#         restr_act_central(21, hombres_restr, "mu_25"),
+#         recuperacion(21, hombres_restr, "mu_21"),
+#         mortalidad(21, hombres_mort, "mu_26")
+#       )
+#     )) *
+#     restr_act_central(21, hombres_restr, "mu_12")
+# }
 # 
+# integrate(expon1, 0, 1)
+
+prueba <- list()
+
+for (i in 21:65) {
+  expon1 <- function(t) {
+    exp(-t * sum(
+      c(
+        restr_act_central(i, hombres_restr, "mu_12"),
+        restr_act_central(i, hombres_restr, "mu_13"),
+        restr_act_central(i, hombres_restr, "mu_14"),
+        restr_act_central(i, hombres_restr, "mu_15"),
+        mortalidad(i, hombres_mort, "mu_16")
+      )
+    )) *
+      exp(-(20 - t) * sum(
+        c(
+          restr_act_central(i, hombres_restr, "mu_23"),
+          restr_act_central(i, hombres_restr, "mu_24"),
+          restr_act_central(i, hombres_restr, "mu_25"),
+          recuperacion(i, hombres_restr, "mu_21"),
+          mortalidad(i, hombres_mort, "mu_26")
+        )
+      )) *
+      restr_act_central(i, hombres_restr, "mu_12")
+  }
+  
+  prueba[[(i - 20)]] <-integrate(expon1, 0, 1)
+}
 ```
 
