@@ -8,8 +8,9 @@ output: html_document
 Inicialmente, se importan las librerías requeridas para el proyecto.
 
 ```{r librerias}
-pacman::p_load(readxl,
-               ggplot2)
+pacman::p_load(dplyr,
+               ggplot2,
+               readxl)
 ```
 
 ## Fuerzas de mortalidad
@@ -20,18 +21,23 @@ Se obtienen las tablas con los parámetros de las fuerzas de mortalidad para cad
 # Se importa la tabla masculina de intensidades graduales a estados de restricción de actividad central
 hombres_restr <- read_excel("data/Tablas Proyecto Final.xlsx",
                             sheet = "h_estados_restr")
+
 # Se importa la tabla femenina de intensidades graduales a estados de restricción de actividad central
 mujeres_restr <- read_excel("data/Tablas Proyecto Final.xlsx",
                             sheet = "m_estados_restr")
+
 # Se importa la tabla masculina transiciones graduales de recuperación
 hombres_recup <- read_excel("data/Tablas Proyecto Final.xlsx",
                             sheet = "h_recuperación")
+
 # Se importa la tabla femenina transiciones graduales de recuperación
 mujeres_recup <- read_excel("data/Tablas Proyecto Final.xlsx",
                             sheet = "m_recuperación")
+
 # Se importa la tabla masculina intensidades de transición graduales de mortalidad
 hombres_mort <- read_excel("data/Tablas Proyecto Final.xlsx",
                            sheet = "h_mortalidad")
+
 # Se importa la tabla femenina intensidades de transición graduales de mortalidad
 mujeres_mort <- read_excel("data/Tablas Proyecto Final.xlsx",
                            sheet = "m_mortalidad")
@@ -45,6 +51,7 @@ Se procede con las funciones para obtener las fuerzas de mortalidad, inicialment
 # tabla: hombres_restr o mujeres_restr
 # mu: mu_12, mu_13, mu_14, mu_15, mu_23, mu_24, mu_25, mu_34, mu_35 o mu_45
 restr_act_central <- function(x, tabla, mu) {
+  # Se separan los casos para edades menores a 65
   if (x <= 65) {
     valor_mu <-
       (tabla[[mu]][1] + tabla[[mu]][2] * (tabla[[mu]][3]) ^ x) / (1 + tabla[[mu]][4] * (tabla[[mu]][3]) ^
@@ -115,5 +122,11 @@ mujeres_prob_transicion <-
              sheet = "m_prob_transicion")
 ```
 
+Se modifican los nombres de las columnas correspondientes.
+
+```{r nombres_transicion}
+colnames(hombres_prob_transicion)[1:2] <- c("Edad", "Capaz")
+colnames(mujeres_prob_transicion)[1:2] <- c("Edad", "Capaz")
+```
 
 
