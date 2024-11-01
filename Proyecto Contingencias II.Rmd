@@ -129,4 +129,77 @@ colnames(hombres_prob_transicion)[1:2] <- c("Edad", "Capaz")
 colnames(mujeres_prob_transicion)[1:2] <- c("Edad", "Capaz")
 ```
 
+Se obtienen, por separado, las probabilidades de transición de cada estado. Esto quiere decir que el índice de la lista coincide con el estado correspondiente, por ejemplo, prob_hombres[[2]] coincide con el estado leve (2).
+
+Junto a lo anterior, en el paper se menciona que no todas las filas suman 1, por lo cual, se hará una corrección uniforme a cada edad para que los modelos tengan sentido.
+
+```{r corrección_probabilidades}
+# Se crea una lista para las probabilidades de cada sexo
+prob_hombres <- list()
+prob_mujeres <- list()
+
+# Se itera para separar las probabilidades por estados
+for (i in c(1:6)) {
+  prob_hombres[[i]] <-
+    as.data.frame(hombres_prob_transicion[(8 * i - 7):(8 * i - 1),])
+  prob_mujeres[[i]] <-
+    as.data.frame(mujeres_prob_transicion[(8 * i - 7):(8 * i - 1),])
+  
+  # Se pone la edad en el nombre de fila de cada DataFrame
+  rownames(prob_hombres[[i]]) <- seq(20, 80, 10)
+  rownames(prob_mujeres[[i]]) <- seq(20, 80, 10)
+  
+  # Se elimina la columna de edad
+  prob_hombres[[i]] <- prob_hombres[[i]] %>%
+    select(-Edad)
+  prob_mujeres[[i]] <- prob_mujeres[[i]] %>%
+    select(-Edad)
+}
+
+# Obtenemos la suma de las filas en cada matriz
+suma_hombres <- sapply(prob_hombres, rowSums)
+suma_mujeres <- sapply(prob_mujeres, rowSums)
+
+# Corregimos las filas que no suman 1
+for (i in 1:length(prob_hombres)) {
+  # Se separan los casos especiales
+  if (i != 3 && i != 4) {
+    # Corrección uniforme por edad
+    correccion_hombres <- ((1 - suma_hombres[, i]) / 6)
+    correccion_mujeres <- ((1 - suma_mujeres[, i]) / 6)
+    
+    # Se aplica la corrección
+    prob_hombres[[i]] <- prob_hombres[[i]] + correccion_hombres
+    prob_mujeres[[i]] <- prob_mujeres[[i]] + correccion_mujeres
+  } else if(i == 3){
+    # Corrección uniforme por edad
+    correccion_hombres <- ((1 - suma_hombres[, i]) / 5)
+    correccion_mujeres <- ((1 - suma_mujeres[, i]) / 5)
+    
+    # Se aplica la corrección
+    prob_hombres[[i]] <- cbind(prob_hombres[[i]][1], prob_hombres[[i]][2:6] + correccion_hombres)
+    prob_mujeres[[i]] <- cbind(prob_mujeres[[i]][1], prob_mujeres[[i]][2:6] + correccion_mujeres)
+  } else{
+    # Corrección uniforme por edad
+    correccion_hombres <- ((1 - suma_hombres[, i]) / 4)
+    correccion_mujeres <- ((1 - suma_mujeres[, i]) / 4)
+    
+    # Se aplica la corrección
+    prob_hombres[[i]] <- cbind(prob_hombres[[i]][1:2], prob_hombres[[i]][3:6] + correccion_hombres)
+    prob_mujeres[[i]] <- cbind(prob_mujeres[[i]][1:2], prob_mujeres[[i]][3:6] + correccion_mujeres)
+  }
+}
+
+# Se eliminan las variables innecesarias
+rm(correccion_hombres, correccion_mujeres, suma_mujeres, suma_hombres)
+```
+
+Con las probabilidades corregidas, se continúa obteniendo las probabilidades de transición intermedias, para edades de 18 a 115, usando el supuesto de fuerza de mortalidad constante.
+
+```{r probabilidades intermedias}
+# Se definen varios vectores, empezando por unos índices
+indices <- c(1:95)
+
+# 
+```
 
