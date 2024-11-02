@@ -196,59 +196,59 @@ rm(correccion_hombres, correccion_mujeres, suma_mujeres, suma_hombres)
 
 Con las probabilidades corregidas, se continúa obteniendo las probabilidades de transición intermedias, para edades de 18 a 115, usando el supuesto de fuerza de mortalidad constante.
 
-```{r probabilidades intermedias}
-
-
-expon1 <- function(t) {
-  exp(-t * sum(
-    c(
-      restr_act_central(21, hombres_restr, "mu_12"),
-      restr_act_central(21, hombres_restr, "mu_13"),
-      restr_act_central(21, hombres_restr, "mu_14"),
-      restr_act_central(21, hombres_restr, "mu_15"),
-      mortalidad(21, hombres_mort, "mu_16")
-    )
-  )) *
-    exp(-(22 - t) * sum(
-      c(
-        restr_act_central(21, hombres_restr, "mu_23"),
-        restr_act_central(21, hombres_restr, "mu_24"),
-        restr_act_central(21, hombres_restr, "mu_25"),
-        recuperacion(21, hombres_restr, "mu_21"),
-        mortalidad(21, hombres_mort, "mu_26")
-      )
-    )) *
-    restr_act_central(21, hombres_restr, "mu_12")
-}
-
-integrate(expon1, 0, 1)
-
-prueba <- list()
-
-for (i in 21:65) {
-  expon1 <- function(t) {
-    exp(-t * sum(
-      c(
-        restr_act_central(i, hombres_restr, "mu_12"),
-        restr_act_central(i, hombres_restr, "mu_13"),
-        restr_act_central(i, hombres_restr, "mu_14"),
-        restr_act_central(i, hombres_restr, "mu_15"),
-        mortalidad(i, hombres_mort, "mu_16")
-      )
-    )) *
-      exp(-((i - 1) - t) * sum(
-        c(
-          restr_act_central(i, hombres_restr, "mu_23"),
-          restr_act_central(i, hombres_restr, "mu_24"),
-          restr_act_central(i, hombres_restr, "mu_25"),
-          recuperacion(i, hombres_restr, "mu_21"),
-          mortalidad(i, hombres_mort, "mu_26")
-        )
-      )) *
-      restr_act_central(i, hombres_restr, "mu_12")
+```{r probabilidades_intermedias}
+# Recorremos cada estado
+for (i in 1:6) {
+  # Iniciamos encontrando las pendientes
+  pendientesh <-
+    (prob_hombres[[i]][2:7, ] - prob_hombres[[i]][1:6, ]) / 10
+  pendientesm <-
+    (prob_mujeres[[i]][2:7, ] - prob_mujeres[[i]][1:6, ]) / 10
+  
+  # Listas para guardar las columnas
+  lista_colsh <- list()
+  lista_colsm <- list()
+  lista_auxh <- list()
+  lista_auxm <- list()
+  
+  # Construimos cada columna
+  for (j in 1:6) {
+    # Probabilidades de los hombres
+    lista_colsh[[1]] <- prob_hombres[[i]][1, j] + pendientesh[1, j] * -2:9
+    lista_colsh[[2]] <-
+      prob_hombres[[i]][2, j] + pendientesh[2, j] * 0:9
+    lista_colsh[[3]] <-
+      prob_hombres[[i]][3, j] + pendientesh[3, j] * 0:9
+    lista_colsh[[4]] <-
+      prob_hombres[[i]][4, j] + pendientesh[4, j] * 0:9
+    lista_colsh[[5]] <-
+      prob_hombres[[i]][5, j] + pendientesh[5, j] * 0:9
+    lista_colsh[[6]] <-
+      prob_hombres[[i]][6, j] + pendientesh[6, j] * 0:45
+    
+    # Probabilidades de las mujeres
+    lista_colsm[[1]] <- prob_mujeres[[i]][1, j] + pendientesm[1, j] * -2:9
+    lista_colsm[[2]] <-
+      prob_mujeres[[i]][2, j] + pendientesm[2, j] * 0:9
+    lista_colsm[[3]] <-
+      prob_mujeres[[i]][3, j] + pendientesm[3, j] * 0:9
+    lista_colsm[[4]] <-
+      prob_mujeres[[i]][4, j] + pendientesm[4, j] * 0:9
+    lista_colsm[[5]] <-
+      prob_mujeres[[i]][5, j] + pendientesm[5, j] * 0:9
+    lista_colsm[[6]] <-
+      prob_mujeres[[i]][6, j] + pendientesm[6, j] * 0:45
+    
+    # Obtenemos el dataframe
+    lista_auxh[[j]] <- unlist(lista_colsh)
+    lista_auxm[[j]] <- unlist(lista_colsm)
   }
   
-  prueba[[(i - 20)]] <-integrate(expon1, 0, 1)
+  # Se extraen los dataframes en las probabilidades
+  prob_hombres[[i]] <- data.frame(lista_auxh, row.names = 18:115)
+  prob_mujeres[[i]] <- data.frame(lista_auxm, row.names = 18:115)
+  colnames(prob_hombres[[i]]) <- c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
+  colnames(prob_mujeres[[i]]) <- c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
 }
 ```
 
