@@ -201,9 +201,9 @@ Con las probabilidades corregidas, se continúa obteniendo las probabilidades de
 for (i in 1:6) {
   # Iniciamos encontrando las pendientes
   pendientesh <-
-    (prob_hombres[[i]][2:7, ] - prob_hombres[[i]][1:6, ]) / 10
+    (prob_hombres[[i]][2:7,] - prob_hombres[[i]][1:6,]) / 10
   pendientesm <-
-    (prob_mujeres[[i]][2:7, ] - prob_mujeres[[i]][1:6, ]) / 10
+    (prob_mujeres[[i]][2:7,] - prob_mujeres[[i]][1:6,]) / 10
   
   # Listas para guardar las columnas
   lista_colsh <- list()
@@ -214,7 +214,8 @@ for (i in 1:6) {
   # Construimos cada columna
   for (j in 1:6) {
     # Probabilidades de los hombres
-    lista_colsh[[1]] <- prob_hombres[[i]][1, j] + pendientesh[1, j] * -2:9
+    lista_colsh[[1]] <-
+      prob_hombres[[i]][1, j] + pendientesh[1, j] * -2:9
     lista_colsh[[2]] <-
       prob_hombres[[i]][2, j] + pendientesh[2, j] * 0:9
     lista_colsh[[3]] <-
@@ -227,7 +228,8 @@ for (i in 1:6) {
       prob_hombres[[i]][6, j] + pendientesh[6, j] * 0:45
     
     # Probabilidades de las mujeres
-    lista_colsm[[1]] <- prob_mujeres[[i]][1, j] + pendientesm[1, j] * -2:9
+    lista_colsm[[1]] <-
+      prob_mujeres[[i]][1, j] + pendientesm[1, j] * -2:9
     lista_colsm[[2]] <-
       prob_mujeres[[i]][2, j] + pendientesm[2, j] * 0:9
     lista_colsm[[3]] <-
@@ -247,8 +249,78 @@ for (i in 1:6) {
   # Se extraen los dataframes en las probabilidades
   prob_hombres[[i]] <- data.frame(lista_auxh, row.names = 18:115)
   prob_mujeres[[i]] <- data.frame(lista_auxm, row.names = 18:115)
-  colnames(prob_hombres[[i]]) <- c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
-  colnames(prob_mujeres[[i]]) <- c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
+  colnames(prob_hombres[[i]]) <-
+    c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
+  colnames(prob_mujeres[[i]]) <-
+    c("Capaz", "Leve", "Moderado", "Severo", "Profundo", "Muerto")
 }
+
+# Se eliminan las variables innecesarias
+rm(pendientesh,
+   pendientesm,
+   lista_auxh,
+   lista_auxm,
+   lista_colsh,
+   lista_colsm)
+```
+
+Posteriormente, se procede a obtener las probabilidades de transición de varios pasos, esto para el cálculo de las primas. La fórmula correspondiente viene dada por:
+
+$$_{k}p_{x} ^ {1j} = \sum_{i = 1} ^ {6} {}_{k - 1}p_{x} ^ {1i} \cdot p_{x + k + 1} ^ {ij}, \hspace{0.3cm} k \geq 2 \hspace{0.1cm} \wedge \hspace{0.1cm} j \in \{1, 2, \dots, 6\}$$
+
+```{r probabilidades_mayores}
+# Función para calcular los kpx
+# edad: edad del individuo (x)
+# tabla_prob: prob_hombres o prob_mujeres
+kpx <- function(edad, tabla_prob) {
+  # Lista para guardar todos los kpx
+  lista_kpx <- list()
+  
+  # Se obtienen iterativamente los kpx
+  for (i in 1:(115 - edad)) {
+    # Término p_{x + k + 1} ^ {ij}
+    px_ij <-
+      do.call(rbind, lapply(tabla_prob, function(df)
+        df[(edad - 17 + i),]))
+    
+    # Se dividen por iteraciones
+    if (i == 1) {
+      # Término _{k - 1}p_{x}^{1i}
+      px_anterior <-
+        matrix(as.numeric(tabla_prob[[1]][(edad - 17),]),
+               nrow = 6,
+               ncol = 6)
+      
+      # Se obtienen los _{2}p_{x}^{0j}
+      lista_kpx[[i]] <- colSums(px_ij * px_anterior)
+      
+    } else{
+      # Se toman las probabilidades calculadas anteriormente
+      px_anterior <-
+        matrix(as.numeric(lista_kpx[[(i - 1)]]),
+               nrow = 6,
+               ncol = 6)
+      
+      # Se obtienen los _{2}p_{x}^{0j}
+      lista_kpx[[i]] <- colSums(px_ij * px_anterior)
+    }
+  }
+  
+  # Se obtiene el DataFrame con los datos correspondientes
+  df <- as.data.frame(t(data.frame(lista_kpx)))
+  
+  # Se agregan las transiciones de 1 paso
+  df <- rbind(tabla_prob[[1]][(edad - 17), ], df)
+
+  # Se modifican los nombres de las filas
+  rownames(df) <- 1:(115 - edad + 1)
+  return(df)
+}
+```
+
+Se realiza un ejemplo de la utilización de la función anterior
+
+```{r prueba_kpx}
+prueba_kpx <- kpx(18, prob_mujeres)
 ```
 
