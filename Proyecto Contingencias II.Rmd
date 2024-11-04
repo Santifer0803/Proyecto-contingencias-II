@@ -455,62 +455,67 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
   for (simulacion in 1:simulaciones) {
     escenario <- matrix(NA, nrow = 97, ncol = 98)
     
-    escenario[1:47, 1] <- rep(0, 47)
+    edades <- 1:47
     
-    for (i in 1:47) {
-      matriz_aleatoria <- matrix(runif(115 * 6), nrow = 115, ncol = 6)
-      
-      estado <- 0
-      
-      intervalos <-
-        unname(c(0, cumsum(c(tabla_prob[[estado + 1]][i,]))))
-      
-      for (j in 1:(length(intervalos) - 1)) {
-        if (!(between(matriz_aleatoria[i, 1], intervalos[j], intervalos[j + 1]))) {
-          estado <- estado + 1
+    escenario[edades, 1] <- rep(0, 47)
+    
+    estados <- escenario[edades, 1]
+    
+    matrices_random <- lapply(edades, function(x) {
+      matrix(runif(97 * 6), nrow = 97, ncol = 6)
+    })
+    
+    intervalos <- lapply(edades, function(x) {
+      unname(c(0, cumsum(c(tabla_prob[[1]][edades[x],]))))
+    })
+    
+    for (i in edades) {
+      for (j in 1:(length(intervalos[[i]]) - 1)) {
+        if (!(between(matrices_random[[i]][i, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
+          estados[i] <- estados[i] + 1
           
         } else{
           break
           
         } # fin if-else
-      } #fin for j
+      } # fin for j
+    }
+    
+    edades <- c(edades, rep(47, 3))
+    
+    for (k in 1:50) {
+      escenario[edades[k] + k, 1 + k] <- estados[min(k, 47)]
       
-      for (k in 1:ncol(escenario)) {
-        if (i + k < 98) {
-          escenario[i + k, 1 + k] <- estado
-          
-          if (estado != 5) {
-            intervalos <- unique(unname(c(0, cumsum(
-              c(tabla_prob[[estado + 1]][i + k,])
-            ))))
-            
-            estado_comp <- 0
-            
-            for (j in 1:(length(intervalos) - 1)) {
-              if (!(between(matriz_aleatoria[i + k, estado + 1], intervalos[j], intervalos[j + 1]))) {
-                estado_comp <- estado_comp + 1
-                
-              } else{
-                break
-                
-              } # fin if-else
-            } #fin for j
-            
-            if (estado_comp < estado) {
-              estado <- estado - 1
-              
-            } else {
-              estado <- estado_comp
-              
-            }
-            
-          } # fin segundo if
-          
-        } # fin primer if
+      if (estados[min(k, 47)] != 5) {
+        intervalos <- unique(unname(c(0, cumsum(
+          c(tabla_prob[[estados[min(k, 47)] + 1]][edades[k] + k, ])
+        ))))
         
-      } # fin for k
+        estados_comp <- rep(0, 47)
+        
+        for (i in 1:47) {
+          for (j in 1:(length(intervalos[[i]]) - 1)) {
+            if (!(between(matrices_random[[i]][i + k, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
+              estados_comp[i] <- estados_comp[i] + 1
+              
+            } else{
+              break
+              
+            } # fin if-else
+          } # fin for j
+        } # fin for i
+        
+        if (estados_comp[min(k, 47)] < estados[min(k, 47)]) {
+          estados[min(k, 47)] <- estados[min(k, 47)] - 1
+          
+        } else {
+          estados[min(k, 47)] <- estados_comp[min(k, 47)]
+          
+        }
+        
+      } # fin if
       
-    } # fin for i
+    } # fin for k
     
     personas_estados <- matrix(0, nrow = 6, ncol = 98)
     
@@ -533,9 +538,11 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
 Ahora se procederá a determinar la esperanza y el percentil 99.5 de las matrices asociadas a las x simulaciones.
 
 ```{r esperanza_percentil_99.5}
+a <- Sys.time()
 # Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
 simulaciones_h <- modelo_estoc(10, prob_hombres)
 simulaciones_m <- modelo_estoc(10, prob_mujeres)
+Sys.time() - a
 
 # Vectores para las esperanzas para cada año, por estado y para cada sexo
 esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
@@ -564,10 +571,38 @@ for (i in 1:6) {
     quantile(columna, 0.995))
   
 }
-
 ```
 
 
+```{r}
+escenario <- matrix(NA, nrow = 97, ncol = 98)
+    
+    edades <- 1:47
+    
+    escenario[edades, 1] <- rep(0, 47)
+    
+    estados <- escenario[edades, 1]
+    
+    matrices_random <- lapply(edades, function(x) {
+      matrix(runif(97 * 6), nrow = 97, ncol = 6)
+    })
+    
+    intervalos <- lapply(edades, function(x) {
+      unname(c(0, cumsum(c(prob_hombres[[1]][edades[x],]))))
+    })
+    
+    for (i in edades) {
+      for (j in 1:(length(intervalos[[i]]) - 1)) {
+        if (!(between(matrices_random[[i]][i, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
+          estados[i] <- estados[i] + 1
+          
+        } else{
+          break
+          
+        } # fin if-else
+      } # fin for j
+    }
+```
 
 
 
