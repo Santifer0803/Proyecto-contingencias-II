@@ -526,7 +526,7 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
         
         # Si el estado es 5 la persona seguirá permaneciendo en ese estado, sino, 
         # se determina el estado al que transiciona el próximo año
-        if (estado < 5) {
+        if (estado != 5) {
           intervalos <- unique(unname(cumsum(c(
             0, prob_hombres[[estado + 1]][i + k, ]
           ))))
