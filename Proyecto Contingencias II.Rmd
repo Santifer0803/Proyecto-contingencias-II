@@ -567,11 +567,10 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
 Ahora se procederá a determinar la esperanza y el percentil 99.5 de las matrices asociadas a las x simulaciones.
 
 ```{r esperanza_percentil_99.5}
-a <- Sys.time()
 # Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
 simulaciones_h <- modelo_estoc(10, prob_hombres)
 simulaciones_m <- modelo_estoc(10, prob_mujeres)
-Sys.time() - a
+
 
 # Vectores para las esperanzas para cada año, por estado y para cada sexo
 esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
