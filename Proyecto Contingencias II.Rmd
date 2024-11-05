@@ -477,7 +477,6 @@ cartera_seguros %>%
   cowplot::theme_cowplot()
 ```
 
-
 ## Primer modelo estocástico
 
 En esta sección se implementará el primer modelo estocástico, el cual simula la cantidad de personas en los diferentes estados al final de cada año, desde el 2024. Para esto, se desarrollará una función que devuelve una lista con una matriz por simulación. Cada una de estas tendrá la cantidad de personas mencionada al final de cada año para cada estado.
@@ -487,83 +486,79 @@ En esta sección se implementará el primer modelo estocástico, el cual simula 
 # simulaciones: cantidad de simulaciones del modelo estocástico
 # tabla_prob: prob_hombres o prob_mujeres
 modelo_estoc <- function(simulaciones, tabla_prob) {
+  # Lista con las matrices de cada simulación
   lista_simulaciones <- list()
   
+  # Iteramos la cantidad de simulaciones especificadas
   for (simulacion in 1:simulaciones) {
+    # Matriz para el escenario
     escenario <- matrix(NA, nrow = 97, ncol = 98)
     
+    # Vector con las edades
     edades <- 1:47
     
-    escenario[edades, 1] <- rep(0, 47)
+    # Las personas de edad 18 a 64 empiezan en el estado 0
+    escenario[edades, 1] <- 0
     
-    estados <- escenario[edades, 1]
+    # Generamos una matriz aleatoria por cada edad
+    matrices_aleatorias <- lapply(edades, function(x)
+      matrix(runif(98 * 6), nrow = 98, ncol = 6))
     
-    matrices_random <- lapply(edades, function(x) {
-      matrix(runif(97 * 6), nrow = 97, ncol = 6)
+    # Lista con los intervalos de transición
+    intervalos_list <- lapply(edades, function(x) {
+      unique(unname(cumsum(c(
+        0, prob_hombres[[1]][edades[x], ]
+      ))))
     })
     
-    intervalos <- lapply(edades, function(x) {
-      unname(c(0, cumsum(c(tabla_prob[[1]][edades[x],]))))
-    })
-    
+    # Iteramos sobre cada edad
     for (i in edades) {
-      for (j in 1:(length(intervalos[[i]]) - 1)) {
-        if (!(between(matrices_random[[i]][i, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
-          estados[i] <- estados[i] + 1
-          
-        } else{
-          break
-          
-        } # fin if-else
-      } # fin for j
-    }
-    
-    edades <- c(edades, rep(47, 3))
-    
-    for (k in 1:50) {
-      escenario[edades[k] + k, 1 + k] <- estados[min(k, 47)]
       
-      if (estados[min(k, 47)] != 5) {
-        intervalos <- unique(unname(c(0, cumsum(
-          c(tabla_prob[[estados[min(k, 47)] + 1]][edades[k] + k, ])
-        ))))
-        
-        estados_comp <- rep(0, 47)
-        
-        for (i in 1:47) {
-          for (j in 1:(length(intervalos[[i]]) - 1)) {
-            if (!(between(matrices_random[[i]][i + k, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
-              estados_comp[i] <- estados_comp[i] + 1
-              
-            } else{
-              break
-              
-            } # fin if-else
-          } # fin for j
-        } # fin for i
-        
-        if (estados_comp[min(k, 47)] < estados[min(k, 47)]) {
-          estados[min(k, 47)] <- estados[min(k, 47)] - 1
-          
-        } else {
-          estados[min(k, 47)] <- estados_comp[min(k, 47)]
-          
-        }
-        
-      } # fin if
+      # Guardamos la matriz aleatoria y los intervalos correspondientes
+      matriz_aleatoria <- matrices_aleatorias[[i]]
+      intervalos <- intervalos_list[[i]]
       
-    } # fin for k
+      # Determinamos el nuevo estado para el segundo año (2025)
+      estado <- sum(matriz_aleatoria[i, 1:(length(intervalos) - 1)] > intervalos[-1])
+      
+      # Iteramos sobre los años
+      for (k in 1:(97 - i)) {
+        
+        # Guardamos el estado de la persona para el año corrrespondiente
+        escenario[i + k, 1 + k] <- estado
+        
+        # Si el estado es 5 la persona seguirá permaneciendo en ese estado, sino, 
+        # se determina el estado al que transiciona el próximo año
+        if (estado < 5) {
+          intervalos <- unique(unname(cumsum(c(
+            0, prob_hombres[[estado + 1]][i + k, ]
+          ))))
+          
+          # Se enecuentra el "nuevo estado"
+          estado_nuevo <- sum(matriz_aleatoria[i + k, 1:(length(intervalos) - 1)] > intervalos[-1])
+          
+          # Actualizamos el estado dependiendo del valor del "nuevo estado"
+          if (estado_nuevo < estado) {
+            estado <- estado - 1
+          } else if (estado_nuevo > estado) {
+            estado <- estado_nuevo
+          }
+        } # fin if
+      } # fin for k
+    } # fin for i
     
+    # Matriz con la cantidad de personas por año para cada estado
     personas_estados <- matrix(0, nrow = 6, ncol = 98)
     
+    # Llenamos la matriz
     for (i in 1:6) {
-      personas_estados[i,] <- apply(escenario, 2, function(col)
+      personas_estados[i, ] <- apply(escenario, 2, function(col)
         sum(col == (i - 1), na.rm = TRUE))
       
     }
     
-    lista_simulaciones[[simulacion]] <- data.frame(personas_estados,
-                                                   row.names = 0:5)
+    # Guardamos la matriz en la lista como un DataFrame
+    lista_simulaciones[[simulacion]] <- data.frame(personas_estados, row.names = 0:5)
     
   } # fin for simulaciones
   
@@ -610,32 +605,6 @@ for (i in 1:6) {
 }
 ```
 
-```{r}
-escenario <- matrix(NA, nrow = 97, ncol = 98)
-    
-    edades <- 1:47
-    
-    escenario[edades, 1] <- rep(0, 47)
-    
-    estados <- escenario[edades, 1]
-    
-    matrices_random <- lapply(edades, function(x) {
-      matrix(runif(97 * 6), nrow = 97, ncol = 6)
-    })
-    
-    intervalos <- lapply(edades, function(x) {
-      unname(c(0, cumsum(c(prob_hombres[[1]][edades[x],]))))
-    })
-    
-    for (i in edades) {
-      for (j in 1:(length(intervalos[[i]]) - 1)) {
-        if (!(between(matrices_random[[i]][i, j], intervalos[[i]][j], intervalos[[i]][j + 1]))) {
-          estados[i] <- estados[i] + 1
-          
-        } else{
-          break
-          
-        } # fin if-else
-      } # fin for j
-    }
-```
+
+
+
