@@ -330,33 +330,30 @@ prueba_kpx <- kpx(18, prob_mujeres)
 
 # Cálculo de las primas
 
-Primeramente se crea una función que devuelva el valor de un seguro temporal a n años
+Primeramente se crea una función que devuelva el valor de un seguro completo para una vida de edad x.
 
-```{r seguro_temporal}
-# Función para calcular el seguro de vida temporal del producto
+```{r seguro_completo}
+# Función para calcular el seguro de vida completo del producto
 # x: edad de la persona
 # v: vector con los facotres de descuento
 # matriz_kpx: matriz con los kpx^{0j}
 # tabla_prob: prob_hombres o prob_mujeres
-Axn05 <- function(x, v, matriz_kpx, tabla_prob) {
-  seguro_temporal <- v[1] * matriz_kpx[1, 6]
+Ax05 <- function(x, v, matriz_kpx, tabla_prob) {
+  seguro_completo <- v[1] * matriz_kpx[1, 6]
   
-  if (x < 64) {
-    for (k in 1:(64 - x)) {
-      kpx0z <- matriz_kpx[k, 1:5]
-      
-      pxk_z5 <- c(tabla_prob[[1]][x + k - 17, 6],
-                  tabla_prob[[2]][x + k - 17, 6],
-                  tabla_prob[[3]][x + k - 17, 6],
-                  tabla_prob[[4]][x + k - 17, 6],
-                  tabla_prob[[5]][x + k - 17, 6])
-      
-      seguro_temporal <- seguro_temporal + v[k + 1] * sum(kpx0z * pxk_z5)
-    }
+  for (k in 1:(114 - x)) {
+    kpx0z <- matriz_kpx[k, 1:5]
     
+    pxk_z5 <- c(tabla_prob[[1]][x + k - 17, 6],
+                tabla_prob[[2]][x + k - 17, 6],
+                tabla_prob[[3]][x + k - 17, 6],
+                tabla_prob[[4]][x + k - 17, 6],
+                tabla_prob[[5]][x + k - 17, 6])
+    
+    seguro_completo <- seguro_completo + v[k + 1] * sum(kpx0z * pxk_z5)
   }
   
-  return(seguro_temporal)
+  return(seguro_completo)
 }
 ```
 
@@ -364,7 +361,7 @@ Con esto, se procede a determinar las primas anuales por edad para cada sexo.
 
 ```{r primas}
 # Tasa equivalente que se usará en los cálculos
-j = 0.0196
+j = 0.0097
 
 # Montos de los beneficios
 S = 3100000
@@ -388,8 +385,8 @@ for (x in 18:64) {
   
   # Se determina la prima para un hombre de edad x
   
-  # Seguro de vida temporal
-  Ax05 <- Axn05(x, v_j, kpx_h, prob_hombres)
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_h, prob_hombres)
   
   # Anualidad de las primas
   ax00 <- 1 + sum(v_j[1:(64 - x)] * kpx_h[1:(64 - x), 1])
@@ -407,15 +404,15 @@ for (x in 18:64) {
   ax04 <- sum(v_j * kpx_h[, 5])
   
   # Calculamos la prima con todo lo anterior
-  prima <- (S * Ax05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
                                                                            ax00 - 0.1)
   # Guardamos la prima para alguien de edad x en el vector de primas
   primas_h <- c(primas_h, prima)
   
   # Analogamente se determina la prima para una mujer de edad x
   
-  # Seguro de vida temporal
-  Ax05 <- Axn05(x, v_j, kpx_m, prob_mujeres)
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_m, prob_mujeres)
   
   # Anualidad de las primas
   ax00 <- 1 + sum(v_j[1:(64 - x)] * kpx_m[1:(64 - x), 1])
@@ -433,7 +430,7 @@ for (x in 18:64) {
   ax04 <- sum(v_j * kpx_m[, 5])
   
   # Calculamos la prima con todo lo anterior
-  prima <- (S * Ax05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
                                                                            ax00 - 0.1)
   # Guardamos la prima para alguien de edad x en el vector de primas
   primas_m <- c(primas_m, prima)
