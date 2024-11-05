@@ -571,7 +571,6 @@ Ahora se procederá a determinar la esperanza y el percentil 99.5 de las matrice
 simulaciones_h <- modelo_estoc(10, prob_hombres)
 simulaciones_m <- modelo_estoc(10, prob_mujeres)
 
-
 # Vectores para las esperanzas para cada año, por estado y para cada sexo
 esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
 esperanzas_m <- matrix(0, nrow = 6, ncol = 98)
