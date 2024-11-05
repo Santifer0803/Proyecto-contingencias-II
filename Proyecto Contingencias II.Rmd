@@ -440,10 +440,47 @@ for (x in 18:64) {
 }
 ```
 
-# Primer modelo estocástico
+# Rentabilidad del producto
 
-En esta sección se implementará el primer modelo estocástico, el cual simula la cantidad de personas en los diferentes estados al final de cada año, desde el 2024.
-Para esto, se desarrollará una función que devuelve una lista con una matriz por simulación. Cada una de estas tendrá la cantidad de personas mencionada al final de cada año para cada estado.
+## Cartera de seguros
+
+Se realizó un documento de *MS Excel* con una variedad de personas, estas representan los distintos sexos y edades que se encuentran en la cartera de seguros de la hipotética aseguradora. La justificación de las cantidades de personas, distribuciones de sexo y demás, se encuentra detallado en el documento escrito, como referencia, se realizan algunos graficos descriptivos para la visualización de los datos.
+
+```{r datos_cartera, message = FALSE}
+# Se descarga la cartera
+cartera_seguros <- read_excel("data/Cartera de seguros.xlsx")
+
+# Sexo de la cartera
+cartera_seguros %>% 
+  ggplot(aes(x = Sexo)) +
+  geom_bar(fill = "darkorchid") +
+  #facet_wrap(~Sexo) +
+  labs(
+    x = "Sexo",
+    y = "Frecuencia",
+    title = "Frecuencia de sexos",
+    
+  ) +
+  cowplot::theme_cowplot()
+
+# Histograma de edades por sexo
+cartera_seguros %>% 
+  ggplot(aes(x = Edades, fill = Sexo)) +
+  geom_histogram(color = "white", binwidth = 1) +
+  #facet_wrap(~Sexo) +
+  labs(
+    x = "Edad",
+    y = "Frecuencia",
+    title = "Frecuencia de edades por sexo",
+    
+  ) +
+  cowplot::theme_cowplot()
+```
+
+
+## Primer modelo estocástico
+
+En esta sección se implementará el primer modelo estocástico, el cual simula la cantidad de personas en los diferentes estados al final de cada año, desde el 2024. Para esto, se desarrollará una función que devuelve una lista con una matriz por simulación. Cada una de estas tendrá la cantidad de personas mencionada al final de cada año para cada estado.
 
 ```{r modelo_estocastico_1}
 # Función que ejecuta el primer modelo estocástico requerido
@@ -573,7 +610,6 @@ for (i in 1:6) {
 }
 ```
 
-
 ```{r}
 escenario <- matrix(NA, nrow = 97, ncol = 98)
     
@@ -603,8 +639,3 @@ escenario <- matrix(NA, nrow = 97, ncol = 98)
       } # fin for j
     }
 ```
-
-
-
-
-
