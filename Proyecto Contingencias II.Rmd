@@ -473,6 +473,22 @@ cartera_seguros %>%
   ) +
   cowplot::theme_cowplot()
 ```
+Pensando en el modelo estocastico, se va a generar un vector por sexo donde cada uno incluya la cantidad de personas por edad. 
+
+```{r}
+poblacion_cartera <- as.data.frame(cartera_seguros)
+
+poblacion_cartera$Edades <- as.numeric(poblacion_cartera$Edades)
+
+hombres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "M"])
+mujeres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "F"])
+
+# Se ordenan los vectores por edad
+edades <- sort(unique(poblacion_cartera$Edades))
+vec_hombres_cartera <- as.numeric(hombres_cartera[as.character(edades)])
+vec_mujeres_cartera <- as.numeric(mujeres_cartera[as.character(edades)])
+
+```
 
 ## Primer modelo estocástico
 
@@ -511,6 +527,11 @@ ingresos_h <- data.frame(
   row.names = 18:115
 )
 ```
+```{r}
+
+```
+
+
 
 Con los datos ya construidos, obtenemos la función para el modelo estocástico.
 
