@@ -473,6 +473,7 @@ cartera_seguros %>%
   ) +
   cowplot::theme_cowplot()
 ```
+
 Pensando en el modelo estocastico, se va a generar un vector por sexo donde cada uno incluya la cantidad de personas por edad. 
 
 ```{r}
