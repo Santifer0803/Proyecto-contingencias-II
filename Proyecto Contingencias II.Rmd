@@ -317,7 +317,7 @@ kpx <- function(edad, tabla_prob) {
   df[nrow(df), ncol(df)] <- 1
 
   # Se modifican los nombres de las filas
-  rownames(df) <- 1:(115 - edad + 1)
+  rownames(df) <- 1:(115 - edad)
   return(df)
 }
 ```
