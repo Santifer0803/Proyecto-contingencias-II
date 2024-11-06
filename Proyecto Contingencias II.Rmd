@@ -477,24 +477,7 @@ cartera_seguros %>%
   cowplot::theme_cowplot()
 ```
 
-Pensando en el modelo estocastico, se va a generar un vector por sexo donde cada uno incluya la cantidad de personas por edad. 
-
-```{r}
-poblacion_cartera <- as.data.frame(cartera_seguros)
-
-poblacion_cartera$Edades <- as.numeric(poblacion_cartera$Edades)
-
-hombres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "M"])
-mujeres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "F"])
-
-# Se ordenan los vectores por edad
-edades <- sort(unique(poblacion_cartera$Edades))
-vec_hombres_cartera <- as.numeric(hombres_cartera[as.character(edades)])
-vec_mujeres_cartera <- as.numeric(mujeres_cartera[as.character(edades)])
-
-```
-
-## Primer modelo estocástico
+## Modelos estocásticos
 
 En esta sección se implementará el primer modelo estocástico, el cual simula la cantidad de personas en los diferentes estados al final de cada año, desde el 2024. Para esto, se desarrollará una función que devuelve una lista, esta contiene una lista con la proyección de personas y otra con la proyección de gastos.
 
@@ -522,13 +505,35 @@ ingresos_m <- data.frame(
 )
 ```
 
+Seguidamente se va a generar un vector para cada sexo donde cada uno incluya la cantidad de personas por edad, usando lo realizado en la sección de la cartera de seguros.
+
+```{r personas_edad}
+poblacion_cartera <- as.data.frame(cartera_seguros)
+
+poblacion_cartera$Edades <- as.numeric(poblacion_cartera$Edades)
+
+hombres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "M"])
+mujeres_cartera <- table(poblacion_cartera$Edades[poblacion_cartera$Sexo == "F"])
+
+# Se ordenan los vectores por edad
+edades <- sort(unique(poblacion_cartera$Edades))
+
+hombres_cartera <- as.numeric(hombres_cartera[as.character(edades)])
+mujeres_cartera <- as.numeric(mujeres_cartera[as.character(edades)])
+```
+
 Con los datos ya construidos, obtenemos la función para el modelo estocástico.
 
 ```{r modelo_estocastico}
 # Función que ejecuta el primer modelo estocástico requerido
 # simulaciones: cantidad de simulaciones del modelo estocástico
 # tabla_prob: prob_hombres o prob_mujeres
-modelo_estoc <- function(simulaciones, tabla_prob, ingresos) {
+# num_personas: hombres_cartera o mujeres_cartera
+# ingresos: 
+modelo_estoc <- function(simulaciones,
+                         tabla_prob,
+                         num_personas,
+                         ingresos) {
   # Lista con las matrices de cada simulación
   lista_personas <- list()
   lista_gastos <- list()
@@ -545,50 +550,50 @@ modelo_estoc <- function(simulaciones, tabla_prob, ingresos) {
     # Las personas de edad 18 a 64 empiezan en el estado 0
     escenario[edades, 1] <- 0
     
-    # Generamos una matriz aleatoria por cada edad
+    # Generamos una matriz aleatoria para cada edad
     matrices_aleatorias <- lapply(edades, function(x)
       matrix(runif(98 * 6), nrow = 98, ncol = 6))
     
     # Lista con los intervalos de transición
     intervalos_list <- lapply(edades, function(x) {
-      unique(unname(cumsum(c(
-        0, prob_hombres[[1]][edades[x], ]
-      ))))
+      unname(cumsum(c(0, tabla_prob[[1]][edades[x], ])))
     })
     
     # Iteramos sobre cada edad
     for (i in edades) {
-      
       # Guardamos la matriz aleatoria y los intervalos correspondientes
       matriz_aleatoria <- matrices_aleatorias[[i]]
       intervalos <- intervalos_list[[i]]
       
       # Determinamos el nuevo estado para el segundo año (2025)
-      estado <- sum(matriz_aleatoria[i, 1:(length(intervalos) - 1)] > intervalos[-1])
+      estado <- which(intervalos[-length(intervalos)] < matriz_aleatoria[i, 1] &
+                        matriz_aleatoria[i, 1] <= intervalos[-1]) - 1
       
       # Iteramos sobre los años
       for (k in 1:(97 - i)) {
-        
         # Guardamos el estado de la persona para el año corrrespondiente
         escenario[i + k, 1 + k] <- estado
         
-        # Si el estado es 5 la persona seguirá permaneciendo en ese estado, sino, 
+        # Si el estado es 5 la persona seguirá permaneciendo en ese estado, sino,
         # se determina el estado al que transiciona el próximo año
-        if (estado != 5) {
-          intervalos <- unique(unname(cumsum(c(
-            0, prob_hombres[[estado + 1]][i + k, ]
-          ))))
+        if (estado < 5) {
+          intervalos <- unname(cumsum(c(tabla_prob[[estado + 1]][i + k, ])))
           
-          # Se enecuentra el "nuevo estado"
-          estado_nuevo <- sum(matriz_aleatoria[i + k, 1:(length(intervalos) - 1)] > intervalos[-1])
+          if (estado < 2) {
+            intervalos <- c(0, intervalos)
+          }
+          
+          # Se encuentra el "nuevo estado"
+          estado_nuevo <- which(intervalos[-length(intervalos)] < matriz_aleatoria[i + k, estado + 1] &
+                                  matriz_aleatoria[i + k, estado + 1] <= intervalos[-1]) - 1
           
           # Actualizamos el estado dependiendo del valor del "nuevo estado"
-          if (estado_nuevo < estado) {
-            estado <- estado - 1
-          } else if (estado_nuevo > estado) {
-            estado <- estado_nuevo
-          }
-        } # fin if
+          estado <- ifelse(estado_nuevo < estado, estado - 1, estado_nuevo)
+        } else{
+          
+          estado <- 6
+          
+          } # fin if-else
       } # fin for k
     } # fin for i
     
@@ -596,42 +601,44 @@ modelo_estoc <- function(simulaciones, tabla_prob, ingresos) {
     personas_estados <- matrix(0, nrow = 6, ncol = 98)
     
     # Llenamos la matriz
-    for (i in 1:6) {
-      personas_estados[i, ] <- apply(escenario, 2, function(col)
-        sum(col == (i - 1), na.rm = TRUE))
+    for (i in 0:5) {
+      personas_estados[(i + 1), ] <- apply(escenario, 2, function(col) {
+        col <- col[!is.na(col)]
+        sum(num_personas[1:length(col)][col == i])
+      })
       
     }
     
     # Guardamos la matriz en la lista como un DataFrame
     lista_personas[[simulacion]] <- data.frame(personas_estados, row.names = 0:5)
     
-    # Para el otro modelo estocástico, iniciamos obteniendo los gastos según el escenario
-    gastos_estoc <-
-      ifelse(escenario == 0, 0, ifelse(escenario == 1, 1430000, ifelse(
-        escenario == 2, 2119000, ifelse(
-          escenario == 3,
-          10089000,
-          ifelse(escenario == 4, 14418000, ifelse(escenario == 5, 3100000, 0))
-        )
-      )))
-    
-    # Si la persona está muerta, solo se hace un pago
-    for (j in 1:47) {
-      dgn <- which(diag(gastos_estoc[j:nrow(gastos_estoc),]) == 3100000)[1]
-      
-      if (!is.na(dgn)) {
-        for (i in 1:(97 - j)) {
-          gastos_estoc[i + j, i + 1] <- ifelse(escenario[i + j - 1, i] == 5, 0, gastos_estoc[i + j, i + 1])
-        }
-      }
-    }
-    
-    # Ingresos según escenario
-    ingresos_estoc <- ifelse(escenario == 0, ingresos[, 1], 0)
+    # # Para el otro modelo estocástico, iniciamos obteniendo los gastos según el escenario
+    # gastos_estoc <-
+    #   ifelse(escenario == 0, 0, ifelse(escenario == 1, 1430000, ifelse(
+    #     escenario == 2, 2119000, ifelse(
+    #       escenario == 3,
+    #       10089000,
+    #       ifelse(escenario == 4, 14418000, ifelse(escenario == 5, 3100000, 0))
+    #     )
+    #   )))
+    #
+    # # Si la persona está muerta, solo se hace un pago
+    # for (j in 1:47) {
+    #   dgn <- which(diag(gastos_estoc[j:nrow(gastos_estoc),]) == 3100000)[1]
+    #
+    #   if (!is.na(dgn)) {
+    #     for (i in 1:(97 - j)) {
+    #       gastos_estoc[i + j, i + 1] <- ifelse(escenario[i + j - 1, i] == 5, 0, gastos_estoc[i + j, i + 1])
+    #     }
+    #   }
+    # }
+    #
+    # # Ingresos según escenario
+    # ingresos_estoc <- ifelse(escenario == 0, ingresos[, 1], 0)
     
   } # fin for simulaciones
   
-  return(list(lista_personas, lista_flujos))
+  return(lista_personas)
   
 }
 ```
@@ -646,22 +653,13 @@ set.seed(2024)
 n_sim <- 10
 
 # Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
-simulaciones_h <- modelo_estoc(n_sim, prob_hombres)
-simulaciones_m <- modelo_estoc(n_sim, prob_mujeres)
+simulaciones_h <- modelo_estoc(n_sim, prob_hombres, hombres_cartera, ingresos_h)
+simulaciones_m <- modelo_estoc(n_sim, prob_mujeres, mujeres_cartera, ingresos_m)
 
-# Vectores para las esperanzas para cada año, por estado y para cada sexo
-esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
-esperanzas_m <- matrix(0, nrow = 6, ncol = 98)
-
-# Esperanza de hombres
-filas_estados <- Reduce("+", simulaciones_h[[1]])
-esperanza_personas_h <- filas_estados / n_sim
-
-# Esperanza de mujeres
-filas_estados <- Reduce("+", simulaciones_m[[1]])
-esperanza_personas_m <- filas_estados / n_sim
+# Matrices con las esperanzas por estado y para cada año, para cada sexo
+esperanzas_h <- Reduce("+", simulaciones_h) / n_sim
+esperanzas_m <- Reduce("+", simulaciones_m) / n_sim
 ```
-
 
 
 
