@@ -576,10 +576,6 @@ simulaciones_m <- modelo_estoc(10, prob_mujeres)
 esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
 esperanzas_m <- matrix(0, nrow = 6, ncol = 98)
 
-# Vectores para los percentiles 99.5 para cada año, por estado y para cada sexo
-percentiles_h <- matrix(0, nrow = 6, ncol = 98)
-percentiles_m <- matrix(0, nrow = 6, ncol = 98)
-
 # Se itera sobre cada estado para obtener las esperanzas y percentiles para cada año
 for (i in 1:6) {
   filas_estados <- do.call(rbind, lapply(simulaciones_h, function(matriz)
@@ -587,16 +583,10 @@ for (i in 1:6) {
   
   esperanzas_h[i, ] <- colMeans(filas_estados)
   
-  percentiles_h[i, ] <- apply(filas_estados, 2, function(columna)
-    quantile(columna, 0.995))
-  
   filas_estados <- do.call(rbind, lapply(simulaciones_m, function(matriz)
     matriz[i, ]))
   
   esperanzas_m[i, ] <- colMeans(filas_estados)
-  
-  percentiles_m <- apply(filas_estados, 2, function(columna)
-    quantile(columna, 0.995))
   
 }
 ```
