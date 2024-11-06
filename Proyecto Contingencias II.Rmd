@@ -566,29 +566,28 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
 
 Ahora se procederá a determinar la esperanza y el percentil 99.5 de las matrices asociadas a las x simulaciones.
 
-```{r esperanza_percentil_99.5}
+```{r esperanza}
+# Definimos la semilla para reproducibilidad
 set.seed(2024)
+
+# Cantidad de simulaciones
+n_sim <- 10
+
 # Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
-simulaciones_h <- modelo_estoc(10, prob_hombres)
-simulaciones_m <- modelo_estoc(10, prob_mujeres)
+simulaciones_h <- modelo_estoc(n_sim, prob_hombres)
+simulaciones_m <- modelo_estoc(n_sim, prob_mujeres)
 
 # Vectores para las esperanzas para cada año, por estado y para cada sexo
 esperanzas_h <- matrix(0, nrow = 6, ncol = 98)
 esperanzas_m <- matrix(0, nrow = 6, ncol = 98)
 
-# Se itera sobre cada estado para obtener las esperanzas y percentiles para cada año
-for (i in 1:6) {
-  filas_estados <- do.call(rbind, lapply(simulaciones_h, function(matriz)
-    matriz[i, ]))
-  
-  esperanzas_h[i, ] <- colMeans(filas_estados)
-  
-  filas_estados <- do.call(rbind, lapply(simulaciones_m, function(matriz)
-    matriz[i, ]))
-  
-  esperanzas_m[i, ] <- colMeans(filas_estados)
-  
-}
+# Se suman todas las simulaciones y se divide entre la cantidad de iteraciones para hombres
+filas_estados <- Reduce("+", simulaciones_h)
+esperanzas_h <- filas_estados / n_sim
+
+# Se suman todas las simulaciones y se divide entre la cantidad de iteraciones para mujeres
+filas_estados <- Reduce("+", simulaciones_m)
+esperanzas_m[i, ] <- filas_estados / n_sim
 ```
 
 
