@@ -481,16 +481,6 @@ En esta sección se implementará el primer modelo estocástico, el cual simula 
 Inicialmente, los gastos por edad son fijos según el estado, entonces determinaremos estos.
 
 ```{r flujos_deterministicos}
-# Gastos determinísticos
-gastos <- data.frame(
-  "0" = rep(0, 98),
-  "1" = rep(1430000, 98),
-  "2" = rep(2119000, 98),
-  "3" = rep(10089000, 98),
-  "4" = rep(14418000, 98),
-  row.names = 18:115
-)
-
 # Ingresos determinísticos de hombres
 ingresos_h <- data.frame(
   "0" = c(primas_h, rep(0, 51)),
@@ -502,7 +492,7 @@ ingresos_h <- data.frame(
 )
 
 # Ingresos determinísticos de mujeres
-ingresos_h <- data.frame(
+ingresos_m <- data.frame(
   "0" = c(primas_m, rep(0, 51)),
   "1" = rep(0, 98),
   "2" = rep(0, 98),
@@ -518,10 +508,11 @@ Con los datos ya construidos, obtenemos la función para el modelo estocástico.
 # Función que ejecuta el primer modelo estocástico requerido
 # simulaciones: cantidad de simulaciones del modelo estocástico
 # tabla_prob: prob_hombres o prob_mujeres
-modelo_estoc <- function(simulaciones, tabla_prob) {
+modelo_estoc <- function(simulaciones, tabla_prob, ingresos) {
   # Lista con las matrices de cada simulación
   lista_personas <- list()
-  lista_flujos <- list()
+  lista_gastos <- list()
+  lista_ingresos <- list()
   
   # Iteramos la cantidad de simulaciones especificadas
   for (simulacion in 1:simulaciones) {
@@ -594,6 +585,30 @@ modelo_estoc <- function(simulaciones, tabla_prob) {
     # Guardamos la matriz en la lista como un DataFrame
     lista_personas[[simulacion]] <- data.frame(personas_estados, row.names = 0:5)
     
+    # Para el otro modelo estocástico, iniciamos obteniendo los gastos según el escenario
+    gastos_estoc <-
+      ifelse(escenario == 0, 0, ifelse(escenario == 1, 1430000, ifelse(
+        escenario == 2, 2119000, ifelse(
+          escenario == 3,
+          10089000,
+          ifelse(escenario == 4, 14418000, ifelse(escenario == 5, 3100000, 0))
+        )
+      )))
+    
+    # Si la persona está muerta, solo se hace un pago
+    for (j in 1:47) {
+      dgn <- which(diag(gastos_estoc[j:nrow(gastos_estoc),]) == 3100000)[1]
+      
+      if (!is.na(dgn)) {
+        for (i in 1:(97 - j)) {
+          gastos_estoc[i + j, i + 1] <- ifelse(escenario[i + j - 1, i] == 5, 0, gastos_estoc[i + j, i + 1])
+        }
+      }
+    }
+    
+    # Ingresos según escenario
+    ingresos_estoc <- ifelse(escenario == 0, ingresos[, 1], 0)
+    
   } # fin for simulaciones
   
   return(list(lista_personas, lista_flujos))
@@ -627,6 +642,30 @@ filas_estados <- Reduce("+", simulaciones_m[[1]])
 esperanza_personas_m <- filas_estados / n_sim
 ```
 
+```{r}
+
+b <-
+  ifelse(a == 0, 0, ifelse(a == 1, 1430000, ifelse(
+    a == 2, 2119000, ifelse(a == 3,
+                            10089000,
+                            ifelse(
+                              a == 4, 14418000, ifelse(a == 5, 3100000, 0)
+                            ))
+  )))
+
+for (j in 1:47) {
+  dgn <- which(diag(b[j:nrow(b), ]) == 3100000)[1]
+  
+  if (!is.na(dgn)) {
+    for (i in 1:(97 - j)) {
+      b[i + j, i + 1] <- ifelse(a[i + j - 1, i] == 5, 0, b[i + j, i + 1])
+    }
+  }
+}
+
+b <- 
+
+```
 
 
 
