@@ -266,7 +266,7 @@ rm(pendientesh,
 
 Posteriormente, se procede a obtener las probabilidades de transición de varios pasos, esto para el cálculo de las primas. La fórmula correspondiente viene dada por:
 
-$$_{k}p_{x} ^ {1j} = \sum_{i = 1} ^ {6} {}_{k - 1}p_{x} ^ {1i} \cdot p_{x + k + 1} ^ {ij}, \hspace{0.3cm} k \geq 2 \hspace{0.1cm} \wedge \hspace{0.1cm} j \in \{1, 2, \dots, 6\}$$
+$$_{k}p_{x} ^ {0j} = \sum_{i = 0} ^ {5} {}_{k - 1}p_{x} ^ {0i} \cdot p_{x + k - 1} ^ {ij}, \hspace{0.3cm} k \geq 2 \hspace{0.1cm} \wedge \hspace{0.1cm} j \in \{0, 1, \dots, 5\}$$
 
 ```{r probabilidades_mayores}
 # Función para calcular los kpx^{1j}
@@ -277,7 +277,7 @@ kpx <- function(edad, tabla_prob) {
   lista_kpx <- list()
   
   # Se obtienen iterativamente los kpx
-  for (i in 1:(115 - edad)) {
+  for (i in 1:(114 - edad)) {
     # Término p_{x + k + 1} ^ {ij}
     px_ij <-
       do.call(rbind, lapply(tabla_prob, function(df)
@@ -322,7 +322,7 @@ kpx <- function(edad, tabla_prob) {
 }
 ```
 
-Se realiza un ejemplo de la utilización de la función anterior.
+Se realiza un ejemplo de la función anterior.
 
 ```{r prueba_kpx}
 prueba_kpx <- kpx(18, prob_mujeres)
@@ -331,6 +331,9 @@ prueba_kpx <- kpx(18, prob_mujeres)
 # Cálculo de las primas
 
 Primeramente se crea una función que devuelva el valor de un seguro completo para una vida de edad x.
+Para esto, se considera la siguiente fórmula:
+
+$$A_x^{05} = v \cdot p_x^{05} + \sum_{k=1}^{114-x} \left[ v^{k+1} \cdot \sum_{z=0}^{4} _kp_x^{0z} \cdot p_{x+k}^{z5} \right]$$
 
 ```{r seguro_completo}
 # Función para calcular el seguro de vida completo del producto
@@ -380,8 +383,8 @@ for (x in 18:64) {
   v_j = (1 + j) ^ (-(1:(115 - x)))
   
   # Generamos la matriz con los kpx para ambos sexos
-  kpx_h <- kpx(x, prob_hombres)[1:(115-x),]
-  kpx_m <- kpx(x, prob_mujeres)[1:(115-x),]
+  kpx_h <- kpx(x, prob_hombres)
+  kpx_m <- kpx(x, prob_mujeres)
   
   # Se determina la prima para un hombre de edad x
   
@@ -389,7 +392,7 @@ for (x in 18:64) {
   Ax_05 <- Ax05(x, v_j, kpx_h, prob_hombres)
   
   # Anualidad de las primas
-  ax00 <- 1 + sum(v_j[1:(64 - x)] * kpx_h[1:(64 - x), 1])
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_h[1:(64 - x), 1])), 0)
   
   # Anualidad para el estado leve
   ax01 <- sum(v_j * kpx_h[, 2])
@@ -415,7 +418,7 @@ for (x in 18:64) {
   Ax_05 <- Ax05(x, v_j, kpx_m, prob_mujeres)
   
   # Anualidad de las primas
-  ax00 <- 1 + sum(v_j[1:(64 - x)] * kpx_m[1:(64 - x), 1])
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_m[1:(64 - x), 1])), 0)
   
   # Anualidad para el estado leve
   ax01 <- sum(v_j * kpx_m[, 2])
@@ -518,11 +521,6 @@ ingresos_m <- data.frame(
   row.names = 18:115
 )
 ```
-```{r}
-
-```
-
-
 
 Con los datos ya construidos, obtenemos la función para el modelo estocástico.
 
@@ -638,7 +636,7 @@ modelo_estoc <- function(simulaciones, tabla_prob, ingresos) {
 }
 ```
 
-Ahora se procederá a determinar la esperanza de las matrices asociadas a las 10000 simulaciones.
+Ahora se procederá a determinar la esperanza de las matrices asociadas a las 10 000 simulaciones.
 
 ```{r esperanza}
 # Definimos la semilla para reproducibilidad
@@ -664,30 +662,8 @@ filas_estados <- Reduce("+", simulaciones_m[[1]])
 esperanza_personas_m <- filas_estados / n_sim
 ```
 
-```{r}
 
-b <-
-  ifelse(a == 0, 0, ifelse(a == 1, 1430000, ifelse(
-    a == 2, 2119000, ifelse(a == 3,
-                            10089000,
-                            ifelse(
-                              a == 4, 14418000, ifelse(a == 5, 3100000, 0)
-                            ))
-  )))
 
-for (j in 1:47) {
-  dgn <- which(diag(b[j:nrow(b), ]) == 3100000)[1]
-  
-  if (!is.na(dgn)) {
-    for (i in 1:(97 - j)) {
-      b[i + j, i + 1] <- ifelse(a[i + j - 1, i] == 5, 0, b[i + j, i + 1])
-    }
-  }
-}
-
-b <- 
-
-```
 
 
 
