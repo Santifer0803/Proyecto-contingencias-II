@@ -711,6 +711,14 @@ simulaciones_h <- modelo_estoc(n_sim, prob_hombres, hombres_cartera, ingresos_h)
 simulaciones_m <- modelo_estoc(n_sim, prob_mujeres, mujeres_cartera, ingresos_m)
 
 # Matrices con las esperanzas por estado y para cada año, para cada sexo
-esperanzas_h <- Reduce("+", simulaciones_h[[1]]) / n_sim
-esperanzas_m <- Reduce("+", simulaciones_m[[1]]) / n_sim
+esperanzas_personas_h <- Reduce("+", simulaciones_h[[1]]) / n_sim
+esperanzas_personas_m <- Reduce("+", simulaciones_m[[1]]) / n_sim
+
+# Esperanzas por estado de gastos
+esperanzas_gastos_h <- Reduce("+", simulaciones_h[[2]]) / n_sim
+esperanzas_gastos_m <- Reduce("+", simulaciones_m[[2]]) / n_sim
+
+# Esperanzas por estado de ingresos
+esperanzas_ingresos_h <- Reduce("+", simulaciones_h[[3]]) / n_sim
+esperanzas_ingresos_m <- Reduce("+", simulaciones_m[[3]]) / n_sim
 ```
