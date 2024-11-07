@@ -704,7 +704,7 @@ Ahora se procederá a determinar la esperanza de las matrices asociadas a las 10
 set.seed(2024)
 
 # Cantidad de simulaciones
-n_sim <- 10
+n_sim <- 10000
 
 # Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
 simulaciones_h <- modelo_estoc(n_sim, prob_hombres, hombres_cartera, ingresos_h)
