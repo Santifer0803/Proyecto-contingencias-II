@@ -534,14 +534,14 @@ modelo_estoc <- function(simulaciones,
                          tabla_prob,
                          num_personas,
                          ingresos) {
-  # Lista con las matrices de cada simulación
+  # Listas con las matrices de cada simulación
   lista_personas <- list()
   lista_gastos <- list()
   lista_ingresos <- list()
   
-  # Iteramos la cantidad de simulaciones especificadas
+  # Iteramos la cantidad de simulaciones especificada
   for (simulacion in 1:simulaciones) {
-    # Matriz para el escenario
+    # Matriz para el escenario de la simulación
     escenario <- matrix(NA, nrow = 97, ncol = 98)
     
     # Vector con las edades
@@ -554,7 +554,7 @@ modelo_estoc <- function(simulaciones,
     matrices_aleatorias <- lapply(edades, function(x)
       matrix(runif(98 * 6), nrow = 98, ncol = 6))
     
-    # Lista con los intervalos de transición
+    # Lista con los intervalos de transición iniciales
     intervalos_list <- lapply(edades, function(x) {
       unname(cumsum(c(0, tabla_prob[[1]][edades[x], ])))
     })
@@ -574,26 +574,29 @@ modelo_estoc <- function(simulaciones,
         # Guardamos el estado de la persona para el año corrrespondiente
         escenario[i + k, 1 + k] <- estado
         
-        # Si el estado es 5 la persona seguirá permaneciendo en ese estado, sino,
-        # se determina el estado al que transiciona el próximo año
+        # Si el estado es 5 la persona sale del modelo, sino, se determina el nuevo
+        # estado al que transiciona
         if (estado < 5) {
+          # Vector con los intervalos de transición
           intervalos <- unname(cumsum(c(tabla_prob[[estado + 1]][i + k, ])))
           
+          # Si el estado es 0 o 1, hay que agregarle un 0 a los intervalos
           if (estado < 2) {
             intervalos <- c(0, intervalos)
           }
           
-          # Se encuentra el "nuevo estado"
+          # Se determina el "nuevo estado"
           estado_nuevo <- which(intervalos[-length(intervalos)] < matriz_aleatoria[i + k, estado + 1] &
                                   matriz_aleatoria[i + k, estado + 1] <= intervalos[-1]) - 1
           
           # Actualizamos el estado dependiendo del valor del "nuevo estado"
           estado <- ifelse(estado_nuevo < estado, estado - 1, estado_nuevo)
         } else{
-          
+          # Para no ir acumulando los fallecidos, establecemos el estado en 6 si la
+          # persona falleció el año anterior
           estado <- 6
           
-          } # fin if-else
+        } # fin if-else
       } # fin for k
     } # fin for i
     
