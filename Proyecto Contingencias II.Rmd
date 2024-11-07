@@ -10,7 +10,8 @@ Inicialmente, se importan las librerías requeridas para el proyecto.
 ```{r librerias}
 pacman::p_load(dplyr,
                ggplot2,
-               readxl)
+               readxl,
+               tidyr)
 ```
 
 ## Fuerzas de mortalidad
@@ -722,3 +723,119 @@ esperanzas_gastos_m <- Reduce("+", simulaciones_m[[2]]) / n_sim
 esperanzas_ingresos_h <- Reduce("+", simulaciones_h[[3]]) / n_sim
 esperanzas_ingresos_m <- Reduce("+", simulaciones_m[[3]]) / n_sim
 ```
+
+Finalmente, se realizan unos gráficos descriptivos de los modelos estocásticos correspondientes.
+
+```{r graficos_finales}
+# Se transpone el dataframe de personas hombres
+df_personas <- as.data.frame(t(esperanzas_personas_h))
+
+# Se agregan los años al dataframe
+df_personas$anno <- 2024:2121
+
+# Se cambian los nombres de columnas
+colnames(df_personas) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados del 0 al 1
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), size = 1) +
+  geom_line(aes(y = est_1, color = "1"), size = 1) +
+  labs(x = "Años", y = "Personas", title = "Hombres por estado en cada año (estados 0 y 1)") +
+  scale_colour_manual(name = "Estados",
+                      values = c("0" = "lightpink2",
+                                 "1" = "salmon2")) +
+  cowplot::theme_cowplot()
+
+# Gráfico de personas, estados del 2 al 5
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_2, color = "2"), size = 1) +
+  geom_line(aes(y = est_3, color = "3"), size = 1) +
+  geom_line(aes(y = est_4, color = "4"), size = 1) +
+  geom_line(aes(y = est_5, color = "5"), size = 1) +
+  labs(x = "Años", y = "Personas", title = "Hombres por estado en cada año (estados 2 al 5)") +
+  scale_colour_manual(
+    name = "Estados",
+    values = c(
+      "2" = "tan2",
+      "3" = "chocolate2",
+      "4" = "hotpink3",
+      "5" = "brown3"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
+# Se transpone el dataframe de personas mujeres
+df_personas <- as.data.frame(t(esperanzas_personas_m))
+
+# Se agregan los años al dataframe
+df_personas$anno <- 2024:2121
+
+# Se cambian los nombres de columnas
+colnames(df_personas) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados del 0 al 1
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), size = 1) +
+  geom_line(aes(y = est_1, color = "1"), size = 1) +
+  labs(x = "Años", y = "Personas", title = "Mujeres por estado en cada año (estados 0 y 1)") +
+  scale_colour_manual(name = "Estados",
+                      values = c("0" = "lightpink2",
+                                 "1" = "salmon2")) +
+  cowplot::theme_cowplot()
+
+# Gráfico de personas, estados del 2 al 5
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_2, color = "2"), size = 1) +
+  geom_line(aes(y = est_3, color = "3"), size = 1) +
+  geom_line(aes(y = est_4, color = "4"), size = 1) +
+  geom_line(aes(y = est_5, color = "5"), size = 1) +
+  labs(x = "Años", y = "Personas", title = "Mujeres por estado en cada año (estados 2 al 5)") +
+  scale_colour_manual(
+    name = "Estados",
+    values = c(
+      "2" = "tan2",
+      "3" = "chocolate2",
+      "4" = "hotpink3",
+      "5" = "brown3"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
+# Dataframe para gastos e ingresos
+df_flujos <-
+  data.frame(
+    sexo = c("Hombres", "Mujeres"),
+    gastos = c(sum(
+      esperanzas_gastos_h, sum(esperanzas_gastos_m)
+    )),
+    ingresos = c(sum(esperanzas_ingresos_h), sum(esperanzas_ingresos_m))
+  )
+
+# Gasto neto
+df_flujos <- df_flujos %>%
+  mutate(neto = ingresos - gastos)
+
+# Se ponen los flujos en formato largo
+df_flujos <- df_flujos %>%
+  pivot_longer(
+    cols = c(gastos, ingresos, neto),
+    names_to = "categoria",
+    values_to = "valor"
+  )
+
+# Gráfico de gastos, ingresos y resultado neto
+ggplot(df_flujos, aes(x = sexo, y = valor, fill = categoria)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           width = 0.7) +
+  labs(x = "Sexo", y = "Valor en 2024 (Colones)", title = "Gastos, Ingresos y flujo neto por sexo") +
+  scale_fill_manual(values = c(
+    "gastos" = "coral3",
+    "ingresos" = "chocolate2",
+    "neto" = "hotpink3"
+  )) +
+  theme_minimal()
+```
+
