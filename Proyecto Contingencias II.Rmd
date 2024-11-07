@@ -821,16 +821,20 @@ df_flujos <- df_flujos %>%
 df_flujos <- df_flujos %>%
   pivot_longer(
     cols = c(gastos, ingresos, neto),
-    names_to = "categoria",
+    names_to = "Categoria",
     values_to = "valor"
   )
 
 # Gráfico de gastos, ingresos y resultado neto
-ggplot(df_flujos, aes(x = sexo, y = valor, fill = categoria)) +
+ggplot(df_flujos, aes(
+  x = sexo,
+  y = (valor / 1000000000),
+  fill = Categoria
+)) +
   geom_bar(stat = "identity",
            position = "dodge",
            width = 0.7) +
-  labs(x = "Sexo", y = "Valor en 2024 (Colones)", title = "Gastos, Ingresos y flujo neto por sexo") +
+  labs(x = "Sexo", y = "Valor en 2024 (Miles de millones de colones)", title = "Gastos, Ingresos y flujo neto por sexo") +
   scale_fill_manual(values = c(
     "gastos" = "coral3",
     "ingresos" = "chocolate2",
