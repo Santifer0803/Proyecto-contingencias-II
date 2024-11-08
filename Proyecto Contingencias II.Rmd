@@ -11,7 +11,8 @@ Inicialmente, se importan las librerías requeridas para el proyecto.
 pacman::p_load(dplyr,
                ggplot2,
                readxl,
-               tidyr)
+               tidyr,
+               xtable)
 ```
 
 ## Fuerzas de mortalidad
@@ -882,5 +883,10 @@ ggplot(df_flujos, aes(
     "neto" = "hotpink3"
   )) +
   theme_minimal()
+```
+
+```{r}
+tabla <- xtable(df_flujos)
+print(tabla, type = "latex")
 ```
 
