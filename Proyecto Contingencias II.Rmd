@@ -803,6 +803,47 @@ ggplot(df_personas, aes(x = annos)) +
   ) +
   cowplot::theme_cowplot()
 
+# Dataframe de comparación de personas por sexo
+df_comparacion <- esperanzas_personas_h - esperanzas_personas_m
+
+# Se transpone el dataframe de personas mujeres
+df_comparacion <- as.data.frame(t(df_comparacion))
+
+# Se agregan los años al dataframe
+df_comparacion$anno <- 2024:2121
+
+# Se cambian los nombres de columnas
+colnames(df_comparacion) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados del 0 al 1
+ggplot(df_comparacion, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), size = 1) +
+  geom_line(aes(y = est_1, color = "1"), size = 1) +
+  geom_line(aes(y = est_2, color = "2"), size = 1) +
+  geom_line(aes(y = est_3, color = "3"), size = 1) +
+  geom_line(aes(y = est_4, color = "4"), size = 1) +
+  geom_line(aes(y = est_5, color = "5"), size = 1) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    size = 1
+  ) +
+  labs(x = "Años", y = "Diferencia de personas", title = "Diferencia entre hombres y mujeres") +
+  scale_colour_manual(
+    name = "Estados",
+    values = c(
+      "0" = "lightpink2",
+      "1" = "salmon2",
+      "2" = "tan2",
+      "3" = "chocolate2",
+      "4" = "hotpink3",
+      "5" = "brown3"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
 # Dataframe para gastos e ingresos
 df_flujos <-
   data.frame(
