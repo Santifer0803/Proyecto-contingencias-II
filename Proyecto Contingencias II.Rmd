@@ -361,27 +361,102 @@ Ax05 <- function(x, v, matriz_kpx, tabla_prob) {
 }
 ```
 
-Con esto, se procede a determinar las primas anuales por edad para cada sexo.
+Con esto, se procede a determinar las primas brutas anuales por edad para cada sexo.
 
-```{r primas}
+```{r primas_brutas}
 # Tasa equivalente que se usará en los cálculos
-j = 0.0097
+j <- 0.0097
 
-# Montos de los beneficios
-S = 3100000
-c1 = 1430000
-c2 = 2119000
-c3 = 10089000
-c4 = 14418000
+# Montos de los beneficios sin gastos
+S <- 3000000
+c1 <- 1380000
+c2 <- 2069000
+c3 <- 10039000
+c4 <- 14368000
 
-# Vectores con las primas
-primas_h <- c()
-primas_m <- c()
+# Vectores con las primas brutas
+primas_brutash <- c()
+primas_brutasm <- c()
 
 # Iteramos sobre cada edad para determinar las primas
 for (x in 18:64) {
   # Vector con los factores de descuento
-  v_j = (1 + j) ^ (-(1:(115 - x)))
+  v_j <- (1 + j) ^ (-(1:(115 - x)))
+  
+  # Generamos la matriz con los kpx para ambos sexos
+  kpx_h <- kpx(x, prob_hombres)
+  kpx_m <- kpx(x, prob_mujeres)
+  
+  # Se determina la prima para un hombre de edad x
+  
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_h, prob_hombres)
+  
+  # Anualidad de las primas
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_h[1:(64 - x), 1])), 0)
+  
+  # Anualidad para el estado leve
+  ax01 <- sum(v_j * kpx_h[, 2])
+  
+  # Anualidad para el estado moderado
+  ax02 <- sum(v_j * kpx_h[, 3])
+  
+  # Anualidad para el estado severo
+  ax03 <- sum(v_j * kpx_h[, 4])
+  
+  # Anualidad para el estado profundo
+  ax04 <- sum(v_j * kpx_h[, 5])
+  
+  # Calculamos la prima con todo lo anterior
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (ax00)
+  # Guardamos la prima para alguien de edad x en el vector de primas
+  primas_brutash <- c(primas_brutash, prima)
+  
+  # Analogamente se determina la prima para una mujer de edad x
+  
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_m, prob_mujeres)
+  
+  # Anualidad de las primas
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_m[1:(64 - x), 1])), 0)
+  
+  # Anualidad para el estado leve
+  ax01 <- sum(v_j * kpx_m[, 2])
+  
+  # Anualidad para el estado moderado
+  ax02 <- sum(v_j * kpx_m[, 3])
+  
+  # Anualidad para el estado severo
+  ax03 <- sum(v_j * kpx_m[, 4])
+  
+  # Anualidad para el estado profundo
+  ax04 <- sum(v_j * kpx_m[, 5])
+  
+  # Calculamos la prima con todo lo anterior
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (ax00)
+  # Guardamos la prima para alguien de edad x en el vector de primas
+  primas_brutasm <- c(primas_brutasm, prima)
+}
+```
+
+Ahora se determinarán las primas netas anuales por edad para cada sexo.
+
+```{r primas_netas}
+# Montos de los beneficios con gastos
+S <- S + 100000
+c1 <- c1 + 50000
+c2 <- c2 + 50000
+c3 <- c3 + 50000
+c4 <- c4 + 50000
+
+# Vectores con las primas netas
+primas_netash <- c()
+primas_netasm <- c()
+
+# Iteramos sobre cada edad para determinar las primas
+for (x in 18:64) {
+  # Vector con los factores de descuento
+  v_j <- (1 + j) ^ (-(1:(115 - x)))
   
   # Generamos la matriz con los kpx para ambos sexos
   kpx_h <- kpx(x, prob_hombres)
@@ -411,7 +486,7 @@ for (x in 18:64) {
   prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
                                                                            ax00 - 0.1)
   # Guardamos la prima para alguien de edad x en el vector de primas
-  primas_h <- c(primas_h, prima)
+  primas_netash <- c(primas_netash, prima)
   
   # Analogamente se determina la prima para una mujer de edad x
   
@@ -437,7 +512,7 @@ for (x in 18:64) {
   prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
                                                                            ax00 - 0.1)
   # Guardamos la prima para alguien de edad x en el vector de primas
-  primas_m <- c(primas_m, prima)
+  primas_netasm <- c(primas_netasm, prima)
 }
 ```
 
@@ -480,7 +555,8 @@ cartera_seguros %>%
 
 ## Modelos estocásticos
 
-En esta sección se implementará el primer modelo estocástico, el cual simula la cantidad de personas en los diferentes estados al final de cada año, desde el 2024. Para esto, se desarrollará una función que devuelve una lista, esta contiene una lista con la proyección de personas y otra con la proyección de gastos.
+En esta sección se implementarán dos modelos estocásticos. El primero simula la cantidad de personas en los diferentes estados al final de cada año a partir del 2024. El segundo obtendrá los montos esperados de ingresos y egresos para cada uno de los estados. Ambos modelos se realizarán para cada sexo.
+Para llevar a cabo lo anterior, se desarrollará una función que devuelva una lista que tendrá  otras tres listas: una con la proyección de personas en cada estado para cada año y otras dos con la proyección de gastos e ingresos para cada uno de los estados.
 
 Inicialmente, los gastos por edad son fijos según el estado, entonces determinaremos estos.
 
@@ -726,7 +802,7 @@ esperanzas_ingresos_m <- Reduce("+", simulaciones_m[[3]]) / n_sim
 
 Finalmente, se realizan unos gráficos descriptivos de los modelos estocásticos correspondientes.
 
-```{r graficos_finales, warning = FALSE, message = FALSE}
+```{r graficos_finales}
 # Se transpone el dataframe de personas hombres
 df_personas <- as.data.frame(t(esperanzas_personas_h))
 
@@ -883,4 +959,6 @@ ggplot(df_flujos, aes(
   )) +
   theme_minimal()
 ```
+
+
 
