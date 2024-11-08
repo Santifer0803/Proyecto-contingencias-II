@@ -961,9 +961,26 @@ ggplot(df_flujos, aes(
   theme_minimal()
 ```
 
+```{r tablas_primas}
+df_primas_netas <- data.frame(primas_netash, primas_netasm)
+df_primas_brutas <- data.frame(primas_brutash, primas_brutasm)
 
-```{r}
-tabla <- xtable(df_flujos)
-print(tabla, type = "latex")
+colnames(df_primas_netas) <- c("Hombre", "Mujer")
+colnames(df_primas_brutas) <- c("Hombre", "Mujer")
+
+rownames(df_primas_netas) <- 18:64
+rownames(df_primas_brutas) <- 18:64
+
+tabla_primas_netas <- xtable(df_primas_netas)
+tabla_primas_brutas <- xtable(df_primas_brutas)
+
+print(tabla_primas_netas, type = "latex")
+print(tabla_primas_brutas, type = "latex")
 ```
+
+```{r tablas_modelos_estocasticos}
+tabla_flujos <- xtable(df_flujos)
+print(tabla_flujos, type = "latex")
+```
+
 
