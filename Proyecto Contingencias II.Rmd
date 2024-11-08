@@ -961,12 +961,9 @@ ggplot(df_flujos, aes(
   theme_minimal()
 ```
 
-<<<<<<< HEAD
+
 ```{r}
 tabla <- xtable(df_flujos)
 print(tabla, type = "latex")
 ```
-=======
-
->>>>>>> 5965e4b1028b0b896de1e717992f7160cab79a16
 
