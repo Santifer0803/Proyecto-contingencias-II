@@ -726,7 +726,7 @@ esperanzas_ingresos_m <- Reduce("+", simulaciones_m[[3]]) / n_sim
 
 Finalmente, se realizan unos gráficos descriptivos de los modelos estocásticos correspondientes.
 
-```{r graficos_finales}
+```{r graficos_finales, warning = FALSE, message = FALSE}
 # Se transpone el dataframe de personas hombres
 df_personas <- as.data.frame(t(esperanzas_personas_h))
 
