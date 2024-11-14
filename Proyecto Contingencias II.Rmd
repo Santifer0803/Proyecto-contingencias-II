@@ -527,31 +527,27 @@ Se realizó un documento de *MS Excel* con una variedad de personas, estas repre
 # Se descarga la cartera
 cartera_seguros <- read_excel("data/Cartera de seguros.xlsx")
 
-# Sexo de la cartera
-cartera_seguros %>% 
-  ggplot(aes(x = Sexo)) +
-  geom_bar(fill = "darkorchid") +
-  #facet_wrap(~Sexo) +
-  labs(
-    x = "Sexo",
-    y = "Frecuencia",
-    title = "Frecuencia de sexos",
-    
-  ) +
-  cowplot::theme_cowplot()
+# Se modifican los nombres de los sexos
+cartera_seguros <- cartera_seguros %>%
+  mutate(Sexo = recode(Sexo, "F" = "Mujer", "M" = "Hombre"))
 
-# Histograma de edades por sexo
-cartera_seguros %>% 
+# Cantidad de personas en la cartera dividida por sexo
+cartera_seguros %>%
+  ggplot(aes(x = Sexo, fill = Sexo)) +
+  geom_bar() +
+  labs(x = "Sexo", y = "Frecuencia") +
+  cowplot::theme_cowplot() +
+  theme(legend.position = "none") +
+  scale_fill_manual(values = c("Hombre" = "darkorchid", "Mujer" = "darkorange"))
+
+# Cantidad de personas en la cartera por edad dividida por sexo
+cartera_seguros %>%
   ggplot(aes(x = Edades, fill = Sexo)) +
   geom_histogram(color = "white", binwidth = 1) +
-  facet_wrap(~Sexo) +
-  labs(
-    x = "Edad",
-    y = "Frecuencia",
-    title = "Frecuencia de edades por sexo",
-    
-  ) +
-  cowplot::theme_cowplot()
+  facet_wrap( ~ Sexo) +
+  labs(x = "Edad", y = "Frecuencia") +
+  cowplot::theme_cowplot() +
+  theme(legend.position = "none")
 ```
 
 ## Modelos estocásticos
@@ -962,7 +958,7 @@ ggplot(df_flujos, aes(
       "ingresos" = "chocolate2",
       "neto" = "hotpink3"
     ),
-    labels = c("gastos" = "Gastos", "ingresos" = "Ingresos", "neto" = "Flujo Neto")
+    labels = c("gastos" = "Gastos", "ingresos" = "Ingresos", "neto" = "Neto")
   ) +
   theme_minimal()
 ```
