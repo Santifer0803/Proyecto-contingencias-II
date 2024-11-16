@@ -992,9 +992,7 @@ ggplot(df_comparacion, aes(x = annos)) +
 df_flujos <-
   data.frame(
     sexo = c("Hombre", "Mujer"),
-    gastos = c(sum(
-      esperanzas_gastos_h, sum(esperanzas_gastos_m)
-    )),
+    gastos = c(sum(esperanzas_gastos_h), sum(esperanzas_gastos_m)),
     ingresos = c(sum(esperanzas_ingresos_h), sum(esperanzas_ingresos_m))
   )
 
