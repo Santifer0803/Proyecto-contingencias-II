@@ -517,6 +517,53 @@ for (x in 18:64) {
 }
 ```
 
+Seguidamente generamos las tablas en formato latex de las primas brutas y netas.
+
+```{r tablas_primas}
+df_primas_netas <- data.frame(primas_netash, primas_netasm)
+df_primas_brutas <- data.frame(primas_brutash, primas_brutasm)
+
+colnames(df_primas_netas) <- c("Hombre", "Mujer")
+colnames(df_primas_brutas) <- c("Hombre", "Mujer")
+
+rownames(df_primas_netas) <- 18:64
+rownames(df_primas_brutas) <- 18:64
+
+tabla_primas_netas <- xtable(df_primas_netas)
+tabla_primas_brutas <- xtable(df_primas_brutas)
+
+print(tabla_primas_netas, type = "latex")
+print(tabla_primas_brutas, type = "latex")
+```
+
+Por último, realizamos los gráficos para visualizar ambos tipos de primas.
+
+```{r graficos_primas}
+# Gráfico primas netas
+ggplot(df_primas_netas, aes(x = 18:64)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima comercial", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "magenta3", "M" = "salmon2"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
+
+# Gráfico primas brutas
+ggplot(df_primas_brutas, aes(x = 18:64)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "magenta3", "M" = "salmon2"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
+```
+
 # Rentabilidad del producto
 
 ## Cartera de seguros
@@ -963,29 +1010,10 @@ ggplot(df_flujos, aes(
   theme_minimal()
 ```
 
-```{r tablas_primas}
-df_primas_netas <- data.frame(primas_netash, primas_netasm)
-df_primas_brutas <- data.frame(primas_brutash, primas_brutasm)
-
-colnames(df_primas_netas) <- c("Hombre", "Mujer")
-colnames(df_primas_brutas) <- c("Hombre", "Mujer")
-
-rownames(df_primas_netas) <- 18:64
-rownames(df_primas_brutas) <- 18:64
-
-tabla_primas_netas <- xtable(df_primas_netas)
-tabla_primas_brutas <- xtable(df_primas_brutas)
-
-print(tabla_primas_netas, type = "latex")
-print(tabla_primas_brutas, type = "latex")
-```
-
 ```{r tablas_modelos_estocasticos}
 tabla_flujos <- xtable(df_flujos)
 print(tabla_flujos, type = "latex")
 ```
-
-
 
 
 
