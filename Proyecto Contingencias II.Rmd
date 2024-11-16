@@ -539,8 +539,8 @@ print(tabla_primas_brutas, type = "latex")
 Por último, realizamos los gráficos para visualizar ambos tipos de primas.
 
 ```{r graficos_primas}
-# Gráfico primas netas
-ggplot(df_primas_netas, aes(x = 18:64)) +
+# Gráficos primas netas
+ggplot(df_primas_netas[1:38, ], aes(x = 18:55)) +
   geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
   geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
   labs(x = "Edad", y = "Prima comercial", color = "Leyenda") +
@@ -551,14 +551,36 @@ ggplot(df_primas_netas, aes(x = 18:64)) +
   ) +
   theme_minimal()
 
-# Gráfico primas brutas
-ggplot(df_primas_brutas, aes(x = 18:64)) +
+ggplot(df_primas_netas[39:47, ], aes(x = 56:64)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima comercial", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "magenta3", "M" = "salmon2"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
+
+# Gráficos primas brutas
+ggplot(df_primas_brutas[1:38, ], aes(x = 18:55)) +
   geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
   geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
   labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
   scale_color_manual(
     name = "Sexo", 
-    values = c("H" = "magenta3", "M" = "salmon2"),
+    values = c("H" = "gold2", "M" = "royalblue"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
+
+ggplot(df_primas_brutas[39:47, ], aes(x = 56:64)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "gold2", "M" = "royalblue"),
     labels = c("H" = "Hombre", "M" = "Mujer")
   ) +
   theme_minimal()
