@@ -1535,4 +1535,34 @@ ggplot(df_flujos, aes(
     labels = c("gastos" = "Gastos", "ingresos" = "Ingresos", "neto" = "Neto")
   ) +
   theme_minimal()
+
+# Se juntan las primas para graficarlas
+primas_brutas_mod <- data.frame(primas_modh, primas_modm)
+
+# Nombre de filas y columnas
+colnames(primas_brutas_mod) <- c("Hombre", "Mujer")
+rownames(primas_brutas_mod) <- 18:64
+
+# Gráficos de primas modificadas con gastos
+ggplot(primas_brutas_mod[1:38, ], aes(x = 18:55)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "gold2", "M" = "royalblue"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
+
+ggplot(primas_brutas_mod[39:47, ], aes(x = 56:64)) +
+  geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
+  geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
+  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  scale_color_manual(
+    name = "Sexo", 
+    values = c("H" = "gold2", "M" = "royalblue"),
+    labels = c("H" = "Hombre", "M" = "Mujer")
+  ) +
+  theme_minimal()
 ```
