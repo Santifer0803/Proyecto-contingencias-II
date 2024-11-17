@@ -1234,6 +1234,28 @@ ggplot(df_flujos, aes(
   theme_minimal()
 ```
 
+## Probabilidades de transición
 
+Una de las variables que más se cree que afecta el análisis son las probabilidades de transición, debido a que se tomó un supuesto muy simplificado para estas, por lo cual, se modifican estas, reduciendo en $10\%$ las probabilidades de estar sano y repartiéndolas en las probabilidades restantes.
 
+```{r modificacion_prob}
+# Copia de las probabilidades para no afectar a las originales
+prob_hombres_mod <- prob_hombres
+prob_mujeres_mod <- prob_mujeres
+
+# Se hace un ciclo para la modificación
+for (i in 1:6) {
+  # Se guardan los elementos a sumar
+  modificacion_hombres <- ((prob_hombres_mod[[i]][, 1] * 0.1) / 5)
+  modificacion_mujeres <- ((prob_mujeres_mod[[i]][, 1] * 0.1) / 5)
+  
+  # Se modifica la primer columna
+  prob_hombres_mod[[i]][, 1] <- prob_hombres_mod[[i]][, 1] * 0.9
+  prob_mujeres_mod[[i]][, 1] <- prob_mujeres_mod[[i]][, 1] * 0.9
+  
+  # Se modifican las demás columnas
+  prob_hombres_mod[[i]][, 2:6] <- prob_hombres_mod[[i]][, 2:6] + modificacion_hombres
+  prob_mujeres_mod[[i]][, 2:6] <- prob_mujeres_mod[[i]][, 2:6] + modificacion_mujeres
+}
+```
 
