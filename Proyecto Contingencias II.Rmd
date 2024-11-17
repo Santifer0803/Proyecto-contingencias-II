@@ -962,12 +962,12 @@ colnames(df_comparacion) <-
 
 # Gráfico de personas, estados del 0 al 1
 ggplot(df_comparacion, aes(x = annos)) +
-  geom_line(aes(y = est_0, color = "0"), size = 1) +
-  geom_line(aes(y = est_1, color = "1"), size = 1) +
-  geom_line(aes(y = est_2, color = "2"), size = 1) +
-  geom_line(aes(y = est_3, color = "3"), size = 1) +
-  geom_line(aes(y = est_4, color = "4"), size = 1) +
-  geom_line(aes(y = est_5, color = "5"), size = 1) +
+  geom_line(aes(y = est_0, color = "0"), linewidth = 1) +
+  geom_line(aes(y = est_1, color = "1"), linewidth = 1) +
+  geom_line(aes(y = est_2, color = "2"), linewidth = 1) +
+  geom_line(aes(y = est_3, color = "3"), linewidth = 1) +
+  geom_line(aes(y = est_4, color = "4"), linewidth = 1) +
+  geom_line(aes(y = est_5, color = "5"), linewidth = 1) +
   geom_hline(
     yintercept = 0,
     linetype = "dashed",
@@ -1166,12 +1166,12 @@ colnames(df_comparacion) <-
 
 # Gráfico de personas, estados del 0 al 1
 ggplot(df_comparacion, aes(x = annos)) +
-  geom_line(aes(y = est_0, color = "0"), size = 1) +
-  geom_line(aes(y = est_1, color = "1"), size = 1) +
-  geom_line(aes(y = est_2, color = "2"), size = 1) +
-  geom_line(aes(y = est_3, color = "3"), size = 1) +
-  geom_line(aes(y = est_4, color = "4"), size = 1) +
-  geom_line(aes(y = est_5, color = "5"), size = 1) +
+  geom_line(aes(y = est_0, color = "0"), linewidth = 1) +
+  geom_line(aes(y = est_1, color = "1"), linewidth = 1) +
+  geom_line(aes(y = est_2, color = "2"), linewidth = 1) +
+  geom_line(aes(y = est_3, color = "3"), linewidth = 1) +
+  geom_line(aes(y = est_4, color = "4"), linewidth = 1) +
+  geom_line(aes(y = est_5, color = "5"), linewidth = 1) +
   geom_hline(
     yintercept = 0,
     linetype = "dashed",
@@ -1227,7 +1227,7 @@ ggplot(df_flujos, aes(
     values = c(
       "gastos" = "paleturquoise2",
       "ingresos" = "palevioletred",
-      "neto" = "purple3"
+      "neto" = "purple2"
     ),
     labels = c("gastos" = "Gastos", "ingresos" = "Ingresos", "neto" = "Neto")
   ) +
