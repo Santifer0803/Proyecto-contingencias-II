@@ -1377,7 +1377,7 @@ esperanzas_ingresos_mprob <- Reduce("+", simulaciones_m[[3]]) / n_sim
 
 Graficamos los resultados de este análisis de sensibilidad.
 
-```{r graficos_sensibilidad_cartera}
+```{r graficos_prob_cartera}
 # Se transpone el dataframe de personas hombres
 df_personas <- as.data.frame(t(esperanzas_personas_hprob))
 
