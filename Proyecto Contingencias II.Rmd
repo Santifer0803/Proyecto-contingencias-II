@@ -1236,7 +1236,7 @@ ggplot(df_flujos, aes(
 
 ## Probabilidades de transición
 
-Una de las variables que más se cree que afecta el análisis son las probabilidades de transición, debido a que se tomó un supuesto muy simplificado para estas, por lo cual, se modifican estas, reduciendo en $10\%$ las probabilidades de estar sano y repartiéndolas en las probabilidades restantes.
+Una de las variables que más se cree que afecta el análisis son las probabilidades de transición, debido a que se tomó un supuesto muy simplificado para estas, por lo cual, se reducirán en $10\%$ las probabilidades de estar sano y se repartirá dicho porcentaje en las probabilidades restantes de manera uniforme.
 
 ```{r modificacion_prob}
 # Copia de las probabilidades para no afectar a las originales
@@ -1246,16 +1246,94 @@ prob_mujeres_mod <- prob_mujeres
 # Se hace un ciclo para la modificación
 for (i in 1:6) {
   # Se guardan los elementos a sumar
-  modificacion_hombres <- ((prob_hombres_mod[[i]][, 1] * 0.1) / 5)
-  modificacion_mujeres <- ((prob_mujeres_mod[[i]][, 1] * 0.1) / 5)
+  modificacion_hombres <- ((prob_hombres_mod[[i]][, 1] * 0.05) / 5)
+  modificacion_mujeres <- ((prob_mujeres_mod[[i]][, 1] * 0.05) / 5)
   
   # Se modifica la primer columna
-  prob_hombres_mod[[i]][, 1] <- prob_hombres_mod[[i]][, 1] * 0.9
-  prob_mujeres_mod[[i]][, 1] <- prob_mujeres_mod[[i]][, 1] * 0.9
+  prob_hombres_mod[[i]][, 1] <- prob_hombres_mod[[i]][, 1] * 0.95
+  prob_mujeres_mod[[i]][, 1] <- prob_mujeres_mod[[i]][, 1] * 0.95
   
   # Se modifican las demás columnas
   prob_hombres_mod[[i]][, 2:6] <- prob_hombres_mod[[i]][, 2:6] + modificacion_hombres
   prob_mujeres_mod[[i]][, 2:6] <- prob_mujeres_mod[[i]][, 2:6] + modificacion_mujeres
 }
 ```
+
+Ahora determinamos las primas comerciales usando estas probabilidades
+
+```{r primas_mod}
+
+# Vectores con las primas modifcadas
+primas_modh <- c()
+primas_modm <- c()
+
+# Iteramos sobre cada edad para determinar las primas
+for (x in 18:64) {
+  # Vector con los factores de descuento
+  v_j <- (1 + j) ^ (-(1:(115 - x)))
+  
+  # Generamos la matriz con los kpx para ambos sexos
+  kpx_h <- kpx(x, prob_hombres_mod)
+  kpx_m <- kpx(x, prob_mujeres_mod)
+  
+  # Se determina la prima para un hombre de edad x
+  
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_h, prob_hombres_mod)
+  
+  # Anualidad de las primas
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_h[1:(64 - x), 1])), 0)
+  
+  # Anualidad para el estado leve
+  ax01 <- sum(v_j * kpx_h[, 2])
+  
+  # Anualidad para el estado moderado
+  ax02 <- sum(v_j * kpx_h[, 3])
+  
+  # Anualidad para el estado severo
+  ax03 <- sum(v_j * kpx_h[, 4])
+  
+  # Anualidad para el estado profundo
+  ax04 <- sum(v_j * kpx_h[, 5])
+  
+  # Calculamos la prima con todo lo anterior
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
+                                                                           ax00 - 0.1)
+  # Guardamos la prima para alguien de edad x en el vector de primas
+  primas_modh <- c(primas_modh, prima)
+  
+  # Analogamente se determina la prima para una mujer de edad x
+  
+  # Seguro de vida completo
+  Ax_05 <- Ax05(x, v_j, kpx_m, prob_mujeres_mod)
+  
+  # Anualidad de las primas
+  ax00 <- 1 + ifelse(x < 64, (sum(v_j[1:(64 - x)] * kpx_m[1:(64 - x), 1])), 0)
+  
+  # Anualidad para el estado leve
+  ax01 <- sum(v_j * kpx_m[, 2])
+  
+  # Anualidad para el estado moderado
+  ax02 <- sum(v_j * kpx_m[, 3])
+  
+  # Anualidad para el estado severo
+  ax03 <- sum(v_j * kpx_m[, 4])
+  
+  # Anualidad para el estado profundo
+  ax04 <- sum(v_j * kpx_m[, 5])
+  
+  # Calculamos la prima con todo lo anterior
+  prima <- (S * Ax_05 + c1 * ax01 + c2 * ax02 + c3 * ax03 + c4 * ax04) / (0.9 *
+                                                                           ax00 - 0.1)
+  # Guardamos la prima para alguien de edad x en el vector de primas
+  primas_modm <- c(primas_modm, prima)
+}
+```
+
+
+
+
+
+
+
 
