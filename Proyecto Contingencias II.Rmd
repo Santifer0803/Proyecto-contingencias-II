@@ -1330,10 +1330,209 @@ for (x in 18:64) {
 }
 ```
 
+Se procede a obtener el modelo estocástico con las primas modificadas.
 
+```{r modelo_probabilidades}
+# Definimos la semilla para reproducibilidad
+set.seed(2024)
 
+# Cantidad de simulaciones
+n_sim <- 10000
 
+# Ingresos por estado de hombres y mujeres
+ingresos_h_mod <- data.frame(
+  "0" = c(primas_modh, rep(0, 51)),
+  "1" = rep(0, 98),
+  "2" = rep(0, 98),
+  "3" = rep(0, 98),
+  "4" = rep(0, 98),
+  row.names = 18:115
+)
 
+ingresos_m_mod <- data.frame(
+  "0" = c(primas_modm, rep(0, 51)),
+  "1" = rep(0, 98),
+  "2" = rep(0, 98),
+  "3" = rep(0, 98),
+  "4" = rep(0, 98),
+  row.names = 18:115
+)
 
+# Determinamos las matrices asociadas a las simulaciones determinadas, tanto para hombres y mujeres
+simulaciones_h <- modelo_estoc(n_sim, prob_hombres_mod, hombres_cartera, ingresos_h_mod)
+simulaciones_m <- modelo_estoc(n_sim, prob_mujeres_mod, mujeres_cartera, ingresos_m_mod)
 
+# Matrices con las esperanzas por estado y para cada año, para cada sexo
+esperanzas_personas_hprob <- Reduce("+", simulaciones_h[[1]]) / n_sim
+esperanzas_personas_mprob <- Reduce("+", simulaciones_m[[1]]) / n_sim
 
+# Esperanzas por estado de gastos
+esperanzas_gastos_hprob <- Reduce("+", simulaciones_h[[2]]) / n_sim
+esperanzas_gastos_mprob <- Reduce("+", simulaciones_m[[2]]) / n_sim
+
+# Esperanzas por estado de ingresos
+esperanzas_ingresos_hprob <- Reduce("+", simulaciones_h[[3]]) / n_sim
+esperanzas_ingresos_mprob <- Reduce("+", simulaciones_m[[3]]) / n_sim
+```
+
+Graficamos los resultados de este análisis de sensibilidad.
+
+```{r graficos_sensibilidad_cartera}
+# Se transpone el dataframe de personas hombres
+df_personas <- as.data.frame(t(esperanzas_personas_hprob))
+
+# Se agregan los años al dataframe
+df_personas$anno <- 2024:2121
+
+# Se cambian los nombres de las columnas
+colnames(df_personas) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados 0 y 1
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), linewidth = 1) +
+  geom_line(aes(y = est_1, color = "1"), linewidth = 1) +
+  labs(x = "Año", y = "Cantidad de personas") +
+  scale_colour_manual(name = "Estado",
+                      values = c("0" = "chartreuse2",
+                                 "1" = "coral2")) +
+  cowplot::theme_cowplot()
+
+# Gráfico de personas, estados del 2 al 5
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_2, color = "2"), linewidth = 1) +
+  geom_line(aes(y = est_3, color = "3"), linewidth = 1) +
+  geom_line(aes(y = est_4, color = "4"), linewidth = 1) +
+  geom_line(aes(y = est_5, color = "5"), linewidth = 1) +
+  labs(x = "Año", y = "Cantidad de personas") +
+  scale_colour_manual(
+    name = "Estado",
+    values = c(
+      "2" = "greenyellow",
+      "3" = "maroon",
+      "4" = "mediumpurple",
+      "5" = "navy"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
+# Se transpone el dataframe de personas mujeres
+df_personas <- as.data.frame(t(esperanzas_personas_mprob))
+
+# Se agregan los años al dataframe
+df_personas$anno <- 2024:2121
+
+# Se cambian los nombres de las columnas
+colnames(df_personas) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados 0 y 1
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), linewidth = 1) +
+  geom_line(aes(y = est_1, color = "1"), linewidth = 1) +
+  labs(x = "Año", y = "Cantidad de personas") +
+  scale_colour_manual(name = "Estado",
+                      values = c("0" = "chartreuse2",
+                                 "1" = "coral2")) +
+  cowplot::theme_cowplot()
+
+# Gráfico de personas, estados del 2 al 5
+ggplot(df_personas, aes(x = annos)) +
+  geom_line(aes(y = est_2, color = "2"), linewidth = 1) +
+  geom_line(aes(y = est_3, color = "3"), linewidth = 1) +
+  geom_line(aes(y = est_4, color = "4"), linewidth = 1) +
+  geom_line(aes(y = est_5, color = "5"), linewidth = 1) +
+  labs(x = "Año", y = "Cantidad de personas") +
+  scale_colour_manual(
+    name = "Estado",
+    values = c(
+      "2" = "greenyellow",
+      "3" = "maroon",
+      "4" = "mediumpurple",
+      "5" = "navy"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
+# Dataframe de comparación de personas por sexo
+df_comparacion <- esperanzas_personas_hprob - esperanzas_personas_mprob
+
+# Se transpone el dataframe de personas mujeres
+df_comparacion <- as.data.frame(t(df_comparacion))
+
+# Se agregan los años al dataframe
+df_comparacion$anno <- 2024:2121
+
+# Se cambian los nombres de las columnas
+colnames(df_comparacion) <-
+  c("est_0", "est_1", "est_2", "est_3", "est_4", "est_5", "annos")
+
+# Gráfico de personas, estados del 0 al 1
+ggplot(df_comparacion, aes(x = annos)) +
+  geom_line(aes(y = est_0, color = "0"), linewidth = 1) +
+  geom_line(aes(y = est_1, color = "1"), linewidth = 1) +
+  geom_line(aes(y = est_2, color = "2"), linewidth = 1) +
+  geom_line(aes(y = est_3, color = "3"), linewidth = 1) +
+  geom_line(aes(y = est_4, color = "4"), linewidth = 1) +
+  geom_line(aes(y = est_5, color = "5"), linewidth = 1) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    color = "black",
+    linewidth = 1
+  ) +
+  labs(x = "Año", y = "Diferencia de personas") +
+  scale_colour_manual(
+    name = "Estado",
+    values = c(
+      "0" = "chocolate2",
+      "1" = "hotpink2",
+      "2" = "greenyellow",
+      "3" = "maroon",
+      "4" = "mediumpurple",
+      "5" = "navy"
+    )
+  ) +
+  cowplot::theme_cowplot()
+
+# Dataframe para los gastos e ingresos
+df_flujos <-
+  data.frame(
+    sexo = c("Hombre", "Mujer"),
+    gastos = c(sum(esperanzas_gastos_hprob), sum(esperanzas_gastos_mprob)),
+    ingresos = c(sum(esperanzas_ingresos_hprob), sum(esperanzas_ingresos_mprob))
+  )
+
+# Dataframe para el flujo neto
+df_flujos <- df_flujos %>%
+  mutate(neto = ingresos - gastos)
+
+# Se ponen los flujos en formato largo
+df_flujos <- df_flujos %>%
+  pivot_longer(
+    cols = c(gastos, ingresos, neto),
+    names_to = "Categoria",
+    values_to = "valor"
+  )
+
+# Gráfico de gastos, ingresos y flujo neto
+ggplot(df_flujos, aes(
+  x = sexo,
+  y = (valor / 1000000000),
+  fill = Categoria
+)) +
+  geom_bar(stat = "identity",
+           position = "dodge",
+           width = 0.7) +
+  labs(x = "Sexo", y = "Valor presente") +
+  scale_fill_manual(
+    name = "Tipo de Flujo",
+    values = c(
+      "gastos" = "paleturquoise2",
+      "ingresos" = "palevioletred",
+      "neto" = "purple2"
+    ),
+    labels = c("gastos" = "Gastos", "ingresos" = "Ingresos", "neto" = "Neto")
+  ) +
+  theme_minimal()
+```
