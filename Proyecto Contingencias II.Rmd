@@ -1536,7 +1536,7 @@ ggplot(df_flujos, aes(
   ) +
   theme_minimal()
 
-# Graffias juntan las primas para graficarlas
+# Sse juntan las primas para graficarlas
 primas_brutas_mod <- data.frame(primas_modh, primas_modm)
 
 # Nombre de filas y columnas
