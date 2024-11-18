@@ -1547,7 +1547,7 @@ rownames(primas_brutas_mod) <- 18:64
 ggplot(primas_brutas_mod[1:38, ], aes(x = 18:55)) +
   geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
   geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
-  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  labs(x = "Edad", y = "Primas comerciales", color = "Leyenda") +
   scale_color_manual(
     name = "Sexo", 
     values = c("H" = "gold2", "M" = "royalblue"),
@@ -1558,7 +1558,7 @@ ggplot(primas_brutas_mod[1:38, ], aes(x = 18:55)) +
 ggplot(primas_brutas_mod[39:47, ], aes(x = 56:64)) +
   geom_line(aes(y = Hombre / 1000000, color = "H"), linewidth = 1) +
   geom_line(aes(y = Mujer / 1000000, color = "M"), linewidth = 1) +
-  labs(x = "Edad", y = "Prima de riesgo", color = "Leyenda") +
+  labs(x = "Edad", y = "Primas comerciales", color = "Leyenda") +
   scale_color_manual(
     name = "Sexo", 
     values = c("H" = "gold2", "M" = "royalblue"),
